@@ -12,15 +12,62 @@
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
   </svelte:head>
-  
-  <header class="header">
+  <div class="background-image"></div>
+  <div class="content"><header class="header">
     <h1>DeepSky</h1>
   </header>
-  
   <main>
     <slot />
   </main>
   
   <footer class="footer">
-    &copy; 2023 DeepSky. All rights reserved.
+    &copy; 2024 DeepSky. All rights reserved.
   </footer>
+  </div>
+  <style>
+  .background-image {
+    background-color: black;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://img.artguru-cdn.com/image/aigc/2cb03433b91fca7af8ade9dbc3aef563_1024_1024.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    z-index: -1;
+  }
+
+.content{
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+  .header {
+    background-color: rgb(20, 20, 20);
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .header h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+
+  .footer {
+    background-color: rgba(244, 244, 244, 0.8);
+    padding: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    margin-top: auto;
+  }
+
+  main {
+    flex: 1;
+    padding: 20px;
+  }
+</style>
