@@ -58,10 +58,10 @@ export async function getWeather(latitude, longitude) {
   const today = format(new Date(), 'yyyyMMdd');
   const { nx, ny } = convertToGrid(latitude, longitude);
   console.log('Converted Coordinates:', nx, ny);
-  const url = `${API_URL}?serviceKey=${API_KEY}&pageNo=1&numOfRows=1000&dataType=JSON&base_date=${today}&base_time=0200&nx=${nx}&ny=${ny}`;
-  console.log('API URL:', url);
+  const url = `${API_URL}?serviceKey=${API_KEY}&pageNo=1&numOfRows=2000&dataType=JSON&base_date=${today}&base_time=0200&nx=${nx}&ny=${ny}`;
+  // console.log('API URL:', url);
   const response = await axios.get(url);
-  console.log('API Response:', response.data);
+  // console.log('API Response:', response.data);
   if (response.data.response.header.resultCode === '00') {
     return response.data.response.body.items.item;
   } else {

@@ -116,3 +116,197 @@
   .fa-spinner {
     margin-right: 5px;
   }
+
+  /* +page.svelte/style */
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+   
+	:global(body) {
+	  font-family: 'Noto Sans KR', sans-serif;
+	}
+   
+	.head {
+	  font-size: 2rem;
+	  font-weight: 700;
+	  margin-bottom: 1rem;
+	  color: #ffffff;
+	  text-shadow: 0 0 10px #31f1ff, 0 0 20px #31f1ff, 0 0 30px #31f1ff, 0 0 40px #31f1ff;
+	}
+   
+	.current-date-time {
+	  font-size: 1.2rem;
+	  font-weight: 500;
+	  margin-bottom: 1rem;
+	  color: #ffffff;
+	}
+   
+	.location-select-container {
+	  display: flex;
+	  gap:1em;
+	}
+   
+	.select-wrapper {
+	  position: relative;
+	}
+   
+	.select-wrapper select {
+	  font-size: 1rem;
+	  padding: 0.5rem 2rem 0.5rem 0.5rem;
+	  border: none;
+	  border-radius: 4px;
+	  background-color: rgba(255, 255, 255, 0.8);
+	  color: #333;
+	  appearance: none;
+	  width: 100%;
+	}
+   
+	.select-wrapper::after {
+	  content: '▼';
+	  position: absolute;
+	  top: 50%;
+	  bottom: -5px;
+	  right: 0.5rem;
+	  transform: translateY(-50%);
+	  font-size: 0.8rem;
+	  color: #333;
+	  pointer-events: none;
+	}
+   
+   
+   
+	button:disabled {
+	  background-color: #ccc;
+	  cursor: not-allowed;
+	}
+   
+	.date-buttons {
+	  display: flex;
+	  gap: 1rem;
+	  margin-bottom: 1rem;
+	}
+   
+   
+	.date-buttons button {
+	  font-size: 1rem;
+	  font-weight: 500;
+	  padding: 0.5rem 1rem;
+	  border: none;
+	  border-radius: 4px;
+	  background-color: rgba(255, 255, 255, 0.8);
+	  color: #333;
+	  cursor: pointer;
+	  transition: background-color 0.3s;
+	}
+   
+	.date-buttons button.selected {
+	  background-color: #31f1ff;
+	  color: #000;
+	}
+   
+	.date-buttons button:hover {
+	  background-color: rgba(255, 255, 255, 0.6);
+	}
+   
+	.date-buttons button.selected:hover {
+	  background-color: #31f1ff;
+	}
+   
+	.time-buttons {
+	  display: grid;
+	  grid-template-columns: repeat(8, 1fr);
+	  gap: 0.5rem;
+	  margin-bottom: 1rem;
+	}
+   
+	.time-buttons button {
+	  font-size: 1rem;
+	  font-weight: 500;
+	  padding: 0.5rem;
+	  border: none;
+	  border-radius: 4px;
+	  background-color: rgba(255, 255, 255, 0.8);
+	  color: #333;
+	  cursor: pointer;
+	  transition: background-color 0.3s;
+	}
+   
+	.time-buttons button.selected {
+	  background-color: #31f1ff;
+	  color: #000;
+	}
+   
+	.time-buttons button:hover {
+	  background-color: rgba(255, 255, 255, 0.6);
+	}
+   
+	.time-buttons button.selected:hover {
+	  background-color: #31f1ff;
+	}
+   .possible{
+	margin-bottom: 15px;
+   }
+	.observation-possible {
+	  color: #001ea3;
+	}
+   
+	.observation-impossible {
+	  color: #ff0000;
+	}
+   
+	.weather-details {
+	  display: grid;
+	  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	  gap: 1rem;
+	  margin-top: 1rem;
+	}
+   
+	.weather-item {
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  padding: 1rem;
+	  border: 1px solid #ffffff;
+	  border-radius: 4px;
+	  background-color: rgba(255, 255, 255, 0.1);
+	}
+   
+	.weather-label {
+	  font-size: 1rem;
+	  font-weight: 500;
+	  margin-bottom: 0.5rem;
+	  color: #ffffff;
+	}
+   
+	.weather-value {
+	  font-size: 1.2rem;
+	  font-weight: 700;
+	  color: #ffffff;
+	}
+  .moon-info-container {
+    margin-top: 2rem;
+  }
+  
+  .moon-info-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #ffffff;
+  }
+  
+  .moon-info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    border-bottom: 1px solid #ffffff;
+  }
+  
+  .moon-info-label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #ffffff;
+  }
+  
+  .moon-info-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
