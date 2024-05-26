@@ -1,6 +1,6 @@
 // src/lib/api/weather.js
 import axios from 'axios';
-import { format } from 'date-fns';
+import { format ,subDays} from 'date-fns';
 
 const API_KEY = 'UVW4wG79WCklkQiInTEfdiSZ9QrsV1j3HoYYdoVYzjRPkZkjPYnskKpBVdBHAH5xiyeacby4Zce%2FVv2HqgIUOA%3D%3D';
 const API_URL = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst';
@@ -55,13 +55,14 @@ function convertToGrid(lat, lon) {
 }
 
 export async function getWeather(latitude, longitude) {
-  const today = format(new Date(), 'yyyyMMdd');
+  const today = new Date();
+  const yesterday = subDays(today, 1);
+  const formattedYesterday = format(yesterday, 'yyyyMMdd');
+  
   const { nx, ny } = convertToGrid(latitude, longitude);
   console.log('Converted Coordinates:', nx, ny);
-  const url = `${API_URL}?serviceKey=${API_KEY}&pageNo=1&numOfRows=2000&dataType=JSON&base_date=${today}&base_time=0200&nx=${nx}&ny=${ny}`;
-  // console.log('API URL:', url);
+  const url = `${API_URL}?serviceKey=${API_KEY}&pageNo=1&numOfRows=2000&dataType=JSON&base_date=${formattedYesterday}&base_time=2000&nx=${nx}&ny=${ny}`;
   const response = await axios.get(url);
-  // console.log('API Response:', response.data);
   if (response.data.response.header.resultCode === '00') {
     return response.data.response.body.items.item;
   } else {

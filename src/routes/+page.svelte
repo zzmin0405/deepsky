@@ -121,24 +121,48 @@
 	}
    
 	function formatPrecipitation(value) {
-	  if (value === undefined) {
-		return '-';
-	  } else if (parseFloat(value) < 1.0) {
-		return '강수없음';
-	  } else {
-		return value + 'mm';
-	  }
-	}
-   
-	function formatSnowfall(value) {
-	  if (value === undefined) {
-		return '-';
-	  } else if (parseFloat(value) < 1.0) {
-		return '적설없음';
-	  } else {
-		return value + 'cm';
-	  }
-	}
+  if (value === undefined) {
+    return '-';
+  } else if (parseFloat(value) < 1.0) {
+    return '1.0mm 미만';
+  } else {
+    const targetDate = format(addDays(currentDate, selectedDay === 'today' ? 0 : selectedDay === 'tomorrow' ? 1 : 2), 'yyyyMMdd');
+    const precipitationRange = weatherData
+      .filter(data => data.fcstDate === targetDate && data.fcstTime === selectedTime && data.category === 'PCP')
+      .map(data => parseFloat(data.fcstValue))
+      .filter(value => !isNaN(value));
+
+    if (precipitationRange.length > 0) {
+      const minPrecipitation = Math.min(...precipitationRange);
+    //   const maxPrecipitation = Math.max(...precipitationRange);
+      return `${minPrecipitation.toFixed(1)}mm`;
+    } else {
+      return '강수없음';
+    }
+  }
+}
+
+function formatSnowfall(value) {
+  if (value === undefined) {
+    return '-';
+  } else if (parseFloat(value) < 1.0) {
+    return '1.0cm 미만';
+  } else {
+    const targetDate = format(addDays(currentDate, selectedDay === 'today' ? 0 : selectedDay === 'tomorrow' ? 1 : 2), 'yyyyMMdd');
+    const snowfallRange = weatherData
+      .filter(data => data.fcstDate === targetDate && data.fcstTime === selectedTime && data.category === 'SNO')
+      .map(data => parseFloat(data.fcstValue))
+      .filter(value => !isNaN(value));
+
+    if (snowfallRange.length > 0) {
+      const minSnowfall = Math.min(...snowfallRange);
+    //   const maxSnowfall = Math.max(...snowfallRange);
+      return `${minSnowfall.toFixed(1)}cm`;
+    } else {
+      return '적설없음';
+    }
+  }
+}
    </script>
    
    <main>
@@ -193,16 +217,16 @@
 			  <button class:selected={selectedTime === time + '00'} on:click={() => getWeatherInfo(selectedDay, time + '00')}>{time}시</button>
 			{/each}
 		  </div>
-		  <div class="observation-container possible">
-			<h3>천문관측 가능 여부</h3>
+		  <div class="observation-container">
+			<h3 class="observation-title">천문관측 가능 여부</h3>
 			{#if selectedTime !== null && isObservable !== null}
 			  {#if isObservable}
-				<p class="observation-possible">관측에 적합한 날씨입니다. 즐거운 관측 되세요! 😊</p>
+				<p class="observation-status observation-possible">관측에 적합한 날씨입니다. 즐거운 관측 되세요! 😊</p>
 			  {:else}
-				<p class="observation-impossible">구름이 많거나 눈/비가 올 것으로 예상되어 관측이 어려울 것 같습니다. 😓</p>
+				<p class="observation-status observation-impossible">구름이 많거나 눈/비가 올 것으로 예상되어 관측이 어려울 것 같습니다. 😓</p>
 			  {/if}
 			{:else}
-			  <p>시간대를 선택하면 천문관측 가능 여부를 확인할 수 있습니다.</p>
+			  <p class="observation-status">시간대를 선택하면 천문관측 가능 여부를 확인할 수 있습니다.</p>
 			{/if}
 		  </div>
 		</div>
@@ -243,32 +267,37 @@
 		{/if}
 	  </div>
 	{/if}
-	<div class="date-buttons">
-		<button class:selected={selectedMoonDay === 'today'} on:click={() => updateMoonData('today')}>오늘</button>
-		<button class:selected={selectedMoonDay === 'tomorrow'} on:click={() => updateMoonData('tomorrow')}>내일</button>
-		<button class:selected={selectedMoonDay === 'dayAfterTomorrow'} on:click={() => updateMoonData('dayAfterTomorrow')}>모레</button>
-	  </div>
+
 	  
 	  {#if moonData}
-		<div class="moon-info-container">
-		  <h2 class="moon-info-title">월출몰 및 천문박명 정보 (서울)</h2>
-		  <!-- ... 기존 월출몰 정보 표시 코드 ... -->
-		  <div class="moon-info-item">
-			<div class="moon-info-label">월출 시각</div>
-			<div class="moon-info-value">{moonData.moonrise}</div>
+	  <div class="moon-info-container">
+		<h2 class="moon-info-title">월출몰 및 천문박명 정보 (서울)</h2>
+
+		<div class="date-buttons">
+			<button class:selected={selectedMoonDay === 'today'} on:click={() => updateMoonData('today')}>오늘</button>
+			<button class:selected={selectedMoonDay === 'tomorrow'} on:click={() => updateMoonData('tomorrow')}>내일</button>
+			<button class:selected={selectedMoonDay === 'dayAfterTomorrow'} on:click={() => updateMoonData('dayAfterTomorrow')}>모레</button>
 		  </div>
-		  <div class="moon-info-item">
-			<div class="moon-info-label">월몰 시각</div>
-			<div class="moon-info-value">{moonData.moonset}</div>
+		  <div class="moon-info-items">
+			<div class="moon-info-item">
+			  <div class="moon-info-icon">
+				<i class="fas fa-moon"></i>
+			  </div>
+			  <div class="moon-info-details">
+				<div class="moon-info-label">월출 시각</div>
+				<div class="moon-info-value">{moonData.moonrise}</div>
+			  </div>
+			</div>
+			<div class="moon-info-item">
+			  <div class="moon-info-icon">
+				<i class="fas fa-moon"></i>
+			  </div>
+			  <div class="moon-info-details">
+				<div class="moon-info-label">월몰 시각</div>
+				<div class="moon-info-value">{moonData.moonset}</div>
+			  </div>
+			</div>
 		  </div>
-		  <div class="moon-info-item">
-			<div class="moon-info-label">천문박명 시작</div>
-			<div class="moon-info-value">{moonData.astronomicalTwilightBegin}</div>
-		  </div>
-		  <div class="moon-info-item">
-			<div class="moon-info-label">천문박명 종료</div>
-			<div class="moon-info-value">{moonData.astronomicalTwilightEnd}</div>
-		  </div>
-		</div>
+	  </div>
 	  {/if}
    </main>
