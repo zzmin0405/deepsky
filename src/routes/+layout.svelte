@@ -86,7 +86,7 @@
 .header {
   color: rgb(211, 156, 241);
   padding: 20px 35px;
-  background: linear-gradient(to right,#683e75f1,#563168c2);
+  background: linear-gradient(to right,#322336f1,#ca7af1c2);
   /* background-color: rgba(173, 173, 173, 0.322); */
 }
 
