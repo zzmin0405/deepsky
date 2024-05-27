@@ -28,6 +28,7 @@
       <ul class="header-ul">
         <li><a href="/community">자유게시판</a></li>
         <li><a href="/tip">팁 게시판</a></li>
+        <li><a href="/location">장소 게시판</a></li>
         <li><a href="/contact">문의사항</a></li>
       </ul>
     </nav>
@@ -86,7 +87,7 @@
 .header {
   color: rgb(211, 156, 241);
   padding: 20px 35px;
-  background: linear-gradient(to right,#322336f1,#ca7af1c2);
+  background: linear-gradient(to right,#5777bd2c,#4c6f9ce7);
   /* background-color: rgba(173, 173, 173, 0.322); */
 }
 
@@ -110,10 +111,18 @@
 
 .header li {
   margin-left: 20px;
+  padding: 6px;
+  transition: background 0.5s ease-in-out;
+  border-radius: 10px;
+}
+.header li:hover{
+
+  background-color: rgba(240, 255, 255, 0.336);
+
 }
 
 .header a {
-  color: rgb(100, 50, 150);
+  color: rgb(255, 255, 255);
   text-decoration: none;
 }
 
