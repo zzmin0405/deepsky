@@ -1,30 +1,53 @@
 <script>
     const observatories = [
       {
-        // name: '한라산국립공원 성판악 탐방안내소',
-        // description: '제주도 한라산 성판악 부근에 위치한 천문대로, 고도가 높고 light pollution이 적어 천체 관측에 최적의 장소입니다.',
+        name: '타임캡슐공원',
+        description: '강원도 정선에 위치한 공원으로, 빛공해가 적고 고도가 높은 강원도라서 추천할 만한 장소입니다.',
         // image: '/path/to/hallasan.jpg',
+        locate:'강원특별자치도 정선군 신동읍 엽기소나무길 518-23'
+      },     
+       {
+        name: '안반데기',
+        description: '강원도 강릉에 위치한 고랭지 농원으로, 부지가 넓고 차박도 가능해 밤새 별을 여유롭게 볼 수 있는 장소입니다.',
+        // image: '/path/to/hallasan.jpg',\
+        locate:'강원특별자치도 강릉시 왕산면 안반데기길 428'
       },
       {
       name: '보현산천문대',
-      description: '경상북도 영천시에 위치한 천문대로, 큰 구경의 망원경을 보유하고 있어 성능이 우수합니다.',
-      image: '/path/to/bohyunsan.jpg',
+      description: '경상북도 영천시에 위치한 천문대로, 경상도에 살고 계시다면 추천할 만한 장소입니다.',
+      // image: '/path/to/bohyunsan.jpg',
+      locate:'경북 영천시 화북면 정각리 산 6-1'
+
     },
       {
-        name: '소백산천문대',
-        description: '경상북도 영주시 소백산 자락에 위치한 천문대로, 천체 관측 외에도 음악회 등 다양한 행사가 열립니다.',
-        image: '/path/to/sobaeksan.jpg',
+        name: '토함산 수목경관숲',
+        description: '경주시에 위치한 풍력발전소 부지로, 차로 쉽게 갈 수 있고 차박도 가능한 장소입니다.',
+        // image: '/path/to/sobaeksan.jpg',
+        locate:'경북 경주시 문무대왕면 장항리 산 599-6'
       },
       {
-        // name: '미원천문대',
-        // description: '경기도 남양주시에 위치한 사설 천문대로, 도심 근교에 위치해 접근성이 좋습니다.',
+        name: '군위 화산 산성 전망대',
+        description: '대구 군위군에 위치한 전망대로, 대구 근교에 위치해 이쁜 풍차와 함께 사진을 찍을 수 있습니다.',
         // image: '/path/to/miwon.jpg',
+       locate:'대구 군위군 삼국유사면 화북리 산 243'
       },
       {
-      name: '경북 청송 주왕산 국립공원',
-      description: '경상북도 청송군에 위치한 국립공원으로, 밤하늘이 잘 보이는 전망대와 캠핑장이 마련되어 있습니다.',
-      image: '/path/to/juwangsan.jpg',
+      name: '영양 반딧불이천문대',
+      description: '경상북도 영양군에 위치한 천문대로, 아시아 최초로 국제밤하늘보호공원으로 지정된 장소입니다.',
+      // image: '/path/to/juwangsan.jpg',
+      locate:'경북 영양군 수비면 반딧불이로 129'
     },
+    {name:'용계의 은행나무',
+      description:'경상북도 안동과 청송군 사이에 있는 부지로, 주변에 광해가 없어 별 보기에 좋습니다.',
+      locate:'경북 안동시 길안면 용계리 744-1'
+    },
+    {name:'육백마지기',
+      description:'강원도 평창군에 있는 풍력발전단지로, 고도가 높아 미세먼지 걱정 없이 하늘을 볼 수 있는 장소입니다.',
+      locate:'강원특별자치도 평창군 미탄면 청옥산길 583-76'
+    },
+    {name:'황매산',
+      description:'경상남도 합천군에 위치한 산으로, 차로 산 정상까지 올라갈 수 있고 오토캠핑장이 있어 캠핑도 할 수 있는 장소입니다.',
+      locate:'경남 합천군 가회면 둔내리 산 219'},
     ];
   </script>
   
@@ -37,16 +60,17 @@
   <div class="observatories">
     {#each observatories as observatory}
       <div class="observatory">
-        <img src={observatory.image} alt={observatory.name} />
+        <!-- <img src={observatory.image} alt={observatory.name} /> -->
         <h2>{observatory.name}</h2>
         <p>{observatory.description}</p>
+        <p class="locate">{observatory.locate}</p>
       </div>
     {/each}
   </div>
   
   <style>
 .title{
-    color: rgb(170, 114, 223);
+    color: rgb(234, 190, 255);
 }
     .observatories {
       display: grid;
@@ -54,8 +78,14 @@
       gap: 20px;
     }
     
+    .observatory h2{
+      color: rgb(255, 255, 255);
+    }
+    .observatory p {
+      color: rgb(217, 176, 255);
+    }
     .observatory {
-        background-color: #9672a028;
+      background-color: #0000005e;
       border: 1px solid #775580;
       border-radius: 10px;
       padding: 20px;
@@ -67,9 +97,12 @@
     .observatory:hover {
         transform:scale(1.05);
     }
-    .observatory img {
+    /* .observatory img {
       width: 100%;
       height: auto;
       margin-bottom: 10px;
+    } */
+    .locate{
+      font-size: 0.8rem;
     }
   </style>

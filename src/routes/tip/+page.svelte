@@ -13,7 +13,6 @@
         title: '장비 준비',
         description: '관측 대상과 목적에 맞는 적절한 망원경이나 쌍안경을 준비하세요. 삼각대를 사용하여 장비를 안정적으로 고정하세요. 필요한 경우 기타 액세서리(접안렌즈, 바로우렌즈, 필터 등)도 준비하세요.',
         image: 'path/to/image2.jpg',
-
         smalldes:'스마트폰과 삼각대만 있어도 충분히 좋은 사진을 찍을 수 있어요 !'
 
       },
@@ -32,8 +31,8 @@
       {
         title: '천체 찾기',
         description: '별자리를 이용하여 목표 천체의 위치를 파악하세요. 넓은 시야의 접안렌즈로 시작하여 점차 고배율로 바꾸어가며 관측하세요. 천체의 움직임을 고려하여 천천히 추적하세요.',
-        image: 'path/to/image5.jpg',
-        smalldes:''
+
+        smalldes:'3번과 같이 stellarium 앱을 통해 보고 싶은 천체를 쉽게 찾을 수 있어요.'
       },
       // {
       //   title: '기록 및 스케치',
@@ -50,20 +49,19 @@
       {
         title: '인내심 갖기',
         description: '천체 관측은 인내심이 필요한 활동입니다. 구름이나 대기 조건 등 변수가 많으므로 여유를 가지세요. 한 번에 모든 것을 보려 하기보다는 천천히 즐기는 마음가짐이 중요합니다.',
-        image: 'path/to/image8.jpg',
-        smalldes:'메인 화면에 있는 날씨 찾기를 통해 도움을 받으세요.'
+        smalldes:''
       },
       {
         title: '안전 유의사항',
         description: '밤에는 추운 날씨에 대비하여 따뜻한 옷을 준비하세요. 어두운 곳에서 이동할 때는 헤드램프나 손전등을 사용하세요. 관측 장비를 다룰 때는 안전에 유의하세요.',
-        image: 'path/to/image9.jpg',
+
         smalldes:''
       },
       {
         title: '지속적인 학습',
         description: '천문학 서적이나 온라인 자료를 통해 꾸준히 공부하세요. 새로운 관측 기술과 정보를 습득하려 노력하세요. 모르는 것이 있다면 전문가나 동호인들에게 질문하세요.',
-        image: 'path/to/image10.jpg',
-        smalldes:''
+
+        smalldes:'여려번 시도해보고 경험하는게 제일 도움됩니다. 실패해도 좌절하지말고 꾸준히 도전하세요!'
       },
     ];
   </script>
@@ -89,6 +87,7 @@
     .container {
       max-width: 800px;
       margin: 0 auto;
+      text-align: center;
       padding: 2rem;
     }
   
@@ -107,6 +106,7 @@
       font-size: 1.8rem;
       color: #ffffff;
       margin-bottom: 1rem;
+      margin-top:-5px;
     }
   .sections{
     padding: 20px;
@@ -135,7 +135,8 @@
   {
     font-size: 0.9rem;
     line-height: 0.001;
-    text-align: justify;
+    margin-bottom: 10px;
+    /* text-align: justify; */
     color: #dbdbdbd3;
 
   }

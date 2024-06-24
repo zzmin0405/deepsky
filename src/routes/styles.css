@@ -71,8 +71,7 @@ select {
 	width: 100%;
   }
 .date-info{
-	/* background-color: #6a5acd; */
-	color: #a1c4fd;
+	color: #ffffff;
 }
 .select-wrapper::after {
   content: '▼';
@@ -153,7 +152,7 @@ button:disabled {
   margin-bottom: 1rem;
 }
 .selected-location{
-	color: #90cdff;
+	color: #ffffff;
 	padding: 10px 0px;
 }
 .time-buttons button {
@@ -185,12 +184,11 @@ button:disabled {
   margin-bottom: 15px;
 }
 
-/* ... 기존 CSS 코드 ... */
 .observation-container,
 .weather-item,
 .moon-info-item {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
   box-shadow: 0 4px 6px rgba(0,0,0,0.7);
 }
 .observation-container {
@@ -198,7 +196,7 @@ button:disabled {
 	padding: 1rem;
 	border: 1px solid #4b3f72;
 	border-radius: 4px;
-	background-color: rgba(255, 255, 255, 0.05);
+	background-color: rgba(255, 255, 255, 0.15);
   }
   
   .observation-title {
@@ -215,14 +213,13 @@ button:disabled {
   }
   
   .observation-possible {
-	color: #872f92;
+	color: #ffffff;
   }
   
   .observation-impossible {
-	color: #a80000;
+	color: #a31c1c;
   }
   
-  /* ... 나머지 CSS 코드 ... */
 
 .weather-details {
   display: grid;
@@ -299,8 +296,6 @@ button:disabled {
   font-weight: 700;
   color: #ffffff;
 }
-
-/* 반응형 웹 디자인을 위한 미디어 쿼리 */
 @media screen and (max-width: 768px) {
   .location-select-container {
     flex-direction: column;
