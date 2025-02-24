@@ -5,7 +5,6 @@
 <script>
     import './styles.css';
     let showMenu = false;
-  
     function toggleMenu() {
       showMenu = !showMenu;
     }
@@ -45,7 +44,7 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <nav>
-          <h1><a href="/">DeepSky</a></h1>
+          <h1><a href="/">홈</a></h1>
           <div class="menu-toggle" on:click={toggleMenu}>
             <i class="fas fa-bars"></i>
           </div>
@@ -53,7 +52,8 @@
             <div class="close-menu-toggle" on:click={toggleMenu}>
               <i class="fas fa-times"></i>
             </div>
-            <!-- <li><a href="/community" on:click={handleMenuItemClick}>자유게시판</a></li> -->
+            <li><a href="/chatbot" on:click={handleMenuItemClick}>챗봇</a></li>
+            <li><a href="/community" on:click={handleMenuItemClick}>자유게시판</a></li>
             <li><a href="/tip" on:click={handleMenuItemClick}>팁 게시판</a></li>
             <li><a href="/location" on:click={handleMenuItemClick}>장소 게시판</a></li>
             <li><a href="/contact" on:click={handleMenuItemClick}>문의사항</a></li>
@@ -70,19 +70,20 @@
   </div>
   
   <style>
-  .app {
-    background-image: url('https://img.artguru-cdn.com/image/aigc/2cb03433b91fca7af8ade9dbc3aef563_1024_1024.webp');
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background-position: no-repeat;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    z-index: -1;
-    min-height: 100vh;
-  }
+.app {
+  /* background-image: url('/src/123.jpg'); */
+  background-color: rgb(83, 28, 88);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  width: 100%;
+  min-height: 100vh;
+  position: relative;  /* fixed에서 relative로 변경 */
+  cursor: default;
+  color: black;
+  overflow-y: auto;  /* 스크롤 허용 */
+}
   
   :global(body) {
     margin: 0;
@@ -90,9 +91,12 @@
   }
   
   .content {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    overflow-y: auto;  /* 스크롤 허용 */
   }
   
   .header {

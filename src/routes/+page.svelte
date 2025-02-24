@@ -18,14 +18,28 @@
     }
   }
 
-  function updateMoonData(day) {
+  async function updateMoonData(day) {
     selectedMoonDay = day;
-    const targetDate = addDays(currentDate, day === 'today' ? 0 : day === 'tomorrow' ? 1 : 2);
-    fetchMoonData(targetDate);
+    const targetDate = new Date(currentDate);
+    
+    if (day === 'tomorrow') {
+      targetDate.setDate(targetDate.getDate() + 1);
+    } else if (day === 'dayAfterTomorrow') {
+      targetDate.setDate(targetDate.getDate() + 2);
+    }
+
+    try {
+      // 서울의 대략적인 좌표 사용
+      moonData = await getMoonRiseSet(37.5665, 126.9780, targetDate);
+      console.log('Moon data:', moonData); // 디버깅용
+    } catch (error) {
+      console.error('Error fetching moon data:', error);
+      moonData = null;
+    }
   }
 
   onMount(() => {
-    fetchMoonData(currentDate);
+    updateMoonData('today');
   });
 	let weatherData = null;
 	let selectedDay = 'today';
@@ -163,7 +177,52 @@ function formatSnowfall(value) {
     }
   }
 }
-   </script>
+
+let isDragging = false;
+let startX;
+let scrollLeft;
+
+function handleMouseDown(e) {
+  isDragging = true;
+  const timeline = e.currentTarget;
+  startX = e.pageX - timeline.offsetLeft;
+  scrollLeft = timeline.scrollLeft;
+  timeline.style.cursor = 'grabbing';
+}
+
+function handleMouseMove(e) {
+  if (!isDragging) return;
+  e.preventDefault();
+  const timeline = e.currentTarget;
+  const x = e.pageX - timeline.offsetLeft;
+  const walk = (x - startX) * 2;
+  timeline.scrollLeft = scrollLeft - walk;
+}
+
+function handleMouseUp(e) {
+  isDragging = false;
+  e.currentTarget.style.cursor = 'grab';
+}
+
+function getWeatherIcon(sky, pty, time) {
+  if (pty === '1') return '🌧️';
+  if (pty === '2') return '🌨️';
+  if (pty === '3') return '❄️';
+  if (pty === '4') return '🌦️';
+  
+  const hour = parseInt(time);
+  const isNight = hour < 6 || hour >= 19;  // 밤 시간대: 19시 ~ 06시
+  
+  switch (sky) {
+    case '1': return isNight ? '🌙' : '☀️';
+    case '2': return isNight ? '🌙' : '🌤️';
+    case '3': return isNight ? '☁️' : '⛅';
+    case '4': return '☁️';
+    default: return '';
+  }
+}
+
+</script>
    
    <main>
 	<h1 class="head">DeepSky - 전국 천문관측 가능 여부 조회</h1>
@@ -211,60 +270,56 @@ function formatSnowfall(value) {
 		  <button class:selected={selectedDay === 'tomorrow'} on:click={() => selectedDay = 'tomorrow'}>내일</button>
 		  <button class:selected={selectedDay === 'dayAfterTomorrow'} on:click={() => selectedDay = 'dayAfterTomorrow'}>모레</button>
 		</div>
-		<div class="time-observation-container">
-		  <div class="time-buttons">
-			{#each ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'] as time}
-			  <button class:selected={selectedTime === time + '00'} on:click={() => getWeatherInfo(selectedDay, time + '00')}>{time}시</button>
-			{/each}
-		  </div>
-		  <div class="observation-container">
-			<h3 class="observation-title">천문관측 가능 여부</h3>
-			{#if selectedTime !== null && isObservable !== null}
-			  {#if isObservable}
-				<p class="observation-status observation-possible">관측에 적합한 날씨입니다. 즐거운 관측 되세요! 😊</p>
-			  {:else}
-				<p class="observation-status observation-impossible">구름이 많거나 눈/비가 올 것으로 예상되어 관측이 어려울 것 같습니다. 😓</p>
-			  {/if}
-			{:else}
-			  <p class="observation-status">시간대를 선택하면 천문관측 가능 여부를 확인할 수 있습니다.</p>
-			{/if}
+
+		<div class="weather-timeline-container">
+		  <div class="weather-timeline" 
+			on:mousedown={handleMouseDown}
+			on:mousemove={handleMouseMove}
+			on:mouseup={handleMouseUp}
+			on:mouseleave={handleMouseUp}
+			style="overflow-x: auto; cursor: grab;">
+			<div class="timeline-hours">
+			  {#each ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'] as time}
+				{@const targetDate = format(addDays(currentDate, selectedDay === 'today' ? 0 : selectedDay === 'tomorrow' ? 1 : 2), 'yyyyMMdd')}
+				{@const weatherInfo = weatherData.filter(data => data.fcstDate === targetDate && data.fcstTime === time + '00')}
+				{@const sky = weatherInfo.find(w => w.category === 'SKY')?.fcstValue}
+				{@const pty = weatherInfo.find(w => w.category === 'PTY')?.fcstValue}
+				<div class="timeline-column" class:selected={selectedTime === time + '00'} on:click={() => getWeatherInfo(selectedDay, time + '00')}>
+				  <div class="time-header">{time}시</div>
+				  <div class="weather-data-item">
+					<span class="data-label">기온</span>
+					<span class="data-value">{formatValue(weatherInfo.find(w => w.category === 'TMP')?.fcstValue)}°C</span>
+				  </div>
+				  <div class="weather-data-item">
+					<span class="weather-icon">{getWeatherIcon(sky, pty, time)}</span>
+					<span class="data-label">하늘상태</span>
+					<span class="data-value">{formatSky(sky)}</span>
+				  </div>
+				  <div class="weather-data-item">
+					<span class="data-label">강수형태</span>
+					<span class="data-value">{formatPrecipitationType(weatherInfo.find(w => w.category === 'PTY')?.fcstValue)}</span>
+				  </div>
+				  <div class="weather-data-item">
+					<span class="data-label">강수확률</span>
+					<span class="data-value">{formatValue(weatherInfo.find(w => w.category === 'POP')?.fcstValue)}%</span>
+				  </div>
+				  <div class="weather-data-item">
+					<span class="data-label">강수량</span>
+					<span class="data-value">{formatPrecipitation(weatherInfo.find(w => w.category === 'PCP')?.fcstValue)}</span>
+				  </div>
+				  <div class="weather-data-item">
+					<span class="data-label">적설량</span>
+					<span class="data-value">{formatSnowfall(weatherInfo.find(w => w.category === 'SNO')?.fcstValue)}</span>
+				  </div>
+				  <div class="weather-data-item">
+					<span class="data-label">습도</span>
+					<span class="data-value">{formatValue(weatherInfo.find(w => w.category === 'REH')?.fcstValue)}%</span>
+				  </div>
+				</div>
+			  {/each}
+			</div>
 		  </div>
 		</div>
-   
-		{#if selectedTime !== null}
-		{@const targetDate = format(addDays(currentDate, selectedDay === 'today' ? 0 : selectedDay === 'tomorrow' ? 1 : 2), 'yyyyMMdd')}
-		{@const weatherInfo = weatherData.filter(data => data.fcstDate === targetDate && data.fcstTime === selectedTime)}
-		  <div class="weather-details">
-			<div class="weather-item">
-			  <div class="weather-label">기온</div>
-			  <div class="weather-value">{formatValue(weatherInfo.find(w => w.category === 'TMP')?.fcstValue)}°C</div>
-			</div>
-			<div class="weather-item">
-			  <div class="weather-label">하늘상태</div>
-			  <div class="weather-value">{formatSky(weatherInfo.find(w => w.category === 'SKY')?.fcstValue)}</div>
-			</div>
-			<div class="weather-item">
-			  <div class="weather-label">강수형태</div>
-			  <div class="weather-value">{formatPrecipitationType(weatherInfo.find(w => w.category === 'PTY')?.fcstValue)}</div>
-			</div>
-			<div class="weather-item">
-			  <div class="weather-label">강수확률</div>
-			  <div class="weather-value">{formatValue(weatherInfo.find(w => w.category === 'POP')?.fcstValue)}%</div>
-			</div>
-			<div class="weather-item">
-			  <div class="weather-label">1시간 강수량</div>
-			  <div class="weather-value">{formatPrecipitation(weatherInfo.find(w => w.category === 'PCP')?.fcstValue)}</div>
-			</div>
-			<div class="weather-item">
-			  <div class="weather-label">1시간 신적설</div>
-			  <div class="weather-value">{formatSnowfall(weatherInfo.find(w => w.category === 'SNO')?.fcstValue)}</div>
-			</div>
-			<div class="weather-item">
-			  <div class="weather-label">습도</div>
-			  <div class="weather-value">{formatValue(weatherInfo.find(w => w.category === 'REH')?.fcstValue)}%</div>
-			</div>
-		  </div>
-		{/if}
 	  </div>
 	{/if}
 
@@ -301,3 +356,135 @@ function formatSnowfall(value) {
 	  </div>
 	  {/if}
    </main>
+
+<style>
+  .weather-timeline-container {
+    margin-top: 20px;
+    width: 100%;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .weather-timeline {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding: 15px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .weather-timeline::-webkit-scrollbar {
+    display: none;
+  }
+
+  .weather-timeline {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .timeline-hours {
+    display: flex;
+    gap: 15px;
+  }
+
+  .timeline-column {
+    min-width: 100px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fafafa;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .timeline-column:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .timeline-column.selected {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+  }
+
+  .time-header {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #eee;
+    color: #1976d2;
+    font-size: 1.1em;
+  }
+
+  .weather-data-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: center;
+  }
+
+  .weather-data-item:last-child {
+    border-bottom: none;
+  }
+
+  .data-label {
+    color: #757575;
+    font-size: 0.85em;
+    margin-bottom: 4px;
+  }
+
+  .data-value {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95em;
+  }
+
+  .date-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+  }
+
+  .date-buttons button {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    background: #f5f5f5;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .date-buttons button.selected {
+    background: #2196f3;
+    color: white;
+    box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
+  }
+
+  .selected-location {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+  }
+
+  .date-info {
+    text-align: center;
+    color: #1976d2;
+    margin-bottom: 15px;
+  }
+
+  .weather-icon {
+    font-size: 1.5em;
+    margin-bottom: 5px;
+  }
+</style>
