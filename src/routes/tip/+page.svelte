@@ -97,14 +97,14 @@
   
     h1 {
       font-size: 2.5rem;
-      color: #ffffff;
+      color: #09ff00;
       text-align: center;
       margin-bottom: 2rem;
     }
   
     h2 {
       font-size: 1.8rem;
-      color: #ffffff;
+      color: rgb(195, 0, 255);
       margin-bottom: 1rem;
       margin-top:-5px;
     }
@@ -113,7 +113,7 @@
     border: 1px solid 4b3f72;
     border-radius: 20px;
     backdrop-filter: blur(10px);
-    background-color: rgba(92, 58, 112, 0.356);
+    background-color: rgba(19, 26, 43, 0.356);
     box-shadow: 4px 2px 10px;
   }
     /* img {

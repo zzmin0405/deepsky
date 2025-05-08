@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { fail, redirect } from '@sveltejs/kit';
-
-const prisma = new PrismaClient();
+import { supabase } from '$lib/supabase';
 
 export const actions = {
   createPost: async ({ request }) => {
@@ -15,15 +13,23 @@ export const actions = {
       return fail(400, { message: '모든 필드를 입력해 주세요.' });
     }
 
-    await prisma.post.create({
-      data: {
-        title,
-        content,
-        author,
-        password,
-      },
-    });
+    const { error } = await supabase
+      .from('posts')
+      .insert([
+        {
+          title,
+          content,
+          author,
+          password,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ]);
+
+    if (error) {
+      return fail(500, { message: '게시물 생성 중 오류가 발생했습니다.' });
+    }
 
     throw redirect(302, '/community/posts');
-  },
+  }
 };

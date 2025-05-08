@@ -40,6 +40,36 @@
 
   onMount(() => {
     updateMoonData('today');
+    
+    // 기본 날씨 데이터 생성 (모든 값이 "-"인 데이터)
+    if (!weatherData) {
+      const defaultWeatherData = [];
+      const times = ['0000', '0100', '0200', '0300', '0400', '0500', '0600', '0700', '0800', '0900', '1000', '1100', 
+                    '1200', '1300', '1400', '1500', '1600', '1700', '1800', '1900', '2000', '2100', '2200', '2300'];
+      
+      const today = format(currentDate, 'yyyyMMdd');
+      const tomorrow = format(addDays(currentDate, 1), 'yyyyMMdd');
+      const dayAfterTomorrow = format(addDays(currentDate, 2), 'yyyyMMdd');
+      
+      const dates = [today, tomorrow, dayAfterTomorrow];
+      const categories = ['TMP', 'SKY', 'PTY', 'POP', 'PCP', 'SNO', 'REH'];
+      
+      dates.forEach(date => {
+        times.forEach(time => {
+          categories.forEach(category => {
+            defaultWeatherData.push({
+              fcstDate: date,
+              fcstTime: time,
+              category: category,
+              fcstValue: '-'
+            });
+          });
+        });
+      });
+      
+      weatherData = defaultWeatherData;
+      selectedTime = '0000';
+    }
   });
 	let weatherData = null;
 	let selectedDay = 'today';
@@ -58,15 +88,15 @@
 		alert('광역시/도와 시/군/구를 선택해주세요.');
 		return;
 	  }
-   
+	 
 	  isLoading = true;
-   
+	 
 	  const location = $locationStore.locations.find(
 		loc =>
 		  loc.province === $province &&
 		  loc.city === $city
 	  );
-   
+	 
 	  if (!location) {
 		console.log('선택된 지역의 위치 정보를 찾을 수 없습니다.');
 		weatherData = null;
@@ -74,7 +104,7 @@
 		isLoading = false;
 		return;
 	  }
-   
+	 
 	  try {
 		weatherData = await getWeather(location.latitude, location.longitude);
 	  } catch (error) {
@@ -84,6 +114,39 @@
 	  } finally {
 		isLoading = false;
 	  }
+	}
+
+	async function handleLocationPermission() {
+		try {
+			if (!browser) return;
+			
+			const position = await new Promise((resolve, reject) => {
+				navigator.geolocation.getCurrentPosition(resolve, reject, {
+					enableHighAccuracy: true,
+					timeout: 5000,
+					maximumAge: 0
+				});
+			});
+
+			userLocation = {
+				latitude: position.coords.latitude,
+				longitude: position.coords.longitude
+			};
+
+			weatherData = await getWeatherData(userLocation.latitude, userLocation.longitude);
+			error = null;
+		} catch (e) {
+			console.error('위치 정보 조회 실패:', e);
+			if (e.message.includes('API 키')) {
+				error = '서버 설정 오류: 날씨 정보를 가져올 수 없습니다.';
+			} else if (e.message.includes('위치')) {
+				error = '위치 정보를 가져올 수 없습니다. 위치 접근을 허용해주세요.';
+			} else {
+				error = e.message || '날씨 정보를 가져오는데 실패했습니다.';
+			}
+		} finally {
+			isLoading = false;
+		}
 	}
    
 	function getWeatherInfo(day, time) {
@@ -254,7 +317,7 @@ function getWeatherIcon(sky, pty, time) {
 		{#if isLoading}
 		  <i class="fas fa-spinner fa-spin"></i> 조회 중...
 		{:else}
-		  조회
+		  날씨 조회
 		{/if}
 	  </button>
 	</div>
@@ -263,7 +326,7 @@ function getWeatherIcon(sky, pty, time) {
 	  <div class="weather-info-container">
 		<h2 class="date-info">날짜별 날씨 정보</h2>
 		<div class="selected-location">
-		  {$province} {$city}
+		  {$province || '지역 미선택'} {$city || ''}
 		</div>
 		<div class="date-buttons">
 		  <button class:selected={selectedDay === 'today'} on:click={() => selectedDay = 'today'}>오늘</button>
@@ -281,7 +344,7 @@ function getWeatherIcon(sky, pty, time) {
 			<div class="timeline-hours">
 			  {#each ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'] as time}
 				{@const targetDate = format(addDays(currentDate, selectedDay === 'today' ? 0 : selectedDay === 'tomorrow' ? 1 : 2), 'yyyyMMdd')}
-				{@const weatherInfo = weatherData.filter(data => data.fcstDate === targetDate && data.fcstTime === time + '00')}
+				{@const weatherInfo = weatherData ? weatherData.filter(data => data.fcstDate === targetDate && data.fcstTime === time + '00') : []}
 				{@const sky = weatherInfo.find(w => w.category === 'SKY')?.fcstValue}
 				{@const pty = weatherInfo.find(w => w.category === 'PTY')?.fcstValue}
 				<div class="timeline-column" class:selected={selectedTime === time + '00'} on:click={() => getWeatherInfo(selectedDay, time + '00')}>
@@ -326,7 +389,7 @@ function getWeatherIcon(sky, pty, time) {
 	  
 	  {#if moonData}
 	  <div class="moon-info-container">
-		<h2 class="moon-info-title">월출몰 및 천문박명 정보 (서울)</h2>
+		<h2 class="moon-info-title">일출몰/월출몰 정보 (서울)</h2>
 
 		<div class="date-buttons">
 			<button class:selected={selectedMoonDay === 'today'} on:click={() => updateMoonData('today')}>오늘</button>
@@ -334,6 +397,24 @@ function getWeatherIcon(sky, pty, time) {
 			<button class:selected={selectedMoonDay === 'dayAfterTomorrow'} on:click={() => updateMoonData('dayAfterTomorrow')}>모레</button>
 		  </div>
 		  <div class="moon-info-items">
+			<div class="moon-info-item">
+			  <div class="moon-info-icon">
+				<span class="weather-icon">🌅</span>
+			  </div>
+			  <div class="moon-info-details">
+				<div class="moon-info-label">일출 시각</div>
+				<div class="moon-info-value">{moonData.sunrise}</div>
+			  </div>
+			</div>
+			<div class="moon-info-item">
+			  <div class="moon-info-icon">
+				<span class="weather-icon">🌇</span>
+			  </div>
+			  <div class="moon-info-details">
+				<div class="moon-info-label">일몰 시각</div>
+				<div class="moon-info-value">{moonData.sunset}</div>
+			  </div>
+			</div>
 			<div class="moon-info-item">
 			  <div class="moon-info-icon">
 				<i class="fas fa-moon"></i>
@@ -479,12 +560,121 @@ function getWeatherIcon(sky, pty, time) {
 
   .date-info {
     text-align: center;
-    color: #1976d2;
+    color: #000000;
     margin-bottom: 15px;
   }
 
   .weather-icon {
     font-size: 1.5em;
     margin-bottom: 5px;
+  }
+
+  .moon-info-container {
+    background: linear-gradient(to bottom, #1a237e, #283593);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    color: white;
+  }
+
+  .moon-info-title {
+    text-align: center;
+    color: #fff;
+    margin-bottom: 20px;
+    font-size: 1.4em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .moon-info-items {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .moon-info-item {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .moon-info-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .moon-info-icon {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    font-size: 1.5em;
+  }
+
+  .moon-info-item:nth-child(1) .moon-info-icon,
+  .moon-info-item:nth-child(2) .moon-info-icon {
+    background: rgba(255, 193, 7, 0.3);
+    color: #FFD54F;
+  }
+
+  .moon-info-item:nth-child(3) .moon-info-icon,
+  .moon-info-item:nth-child(4) .moon-info-icon {
+    background: rgba(156, 39, 176, 0.3);
+    color: #CE93D8;
+  }
+
+  .moon-info-details {
+    width: 100%;
+  }
+
+  .moon-info-label {
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-bottom: 5px;
+  }
+
+  .moon-info-value {
+    font-size: 1.3em;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .moon-info-container .date-buttons {
+    margin-bottom: 25px;
+  }
+
+  .moon-info-container .date-buttons button {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 20px;
+  }
+
+  .moon-info-container .date-buttons button.selected {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    .moon-info-items {
+      flex-wrap: wrap;
+    }
+    
+    .moon-info-item {
+      width: calc(50% - 5px);
+      flex: none;
+    }
   }
 </style>
