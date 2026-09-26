@@ -17,7 +17,10 @@ Preserve the current SvelteKit structure. Do not replace the app with a generic 
 - Install dependencies: `npm install`
 - Start dev server: `npm run dev -- --host 127.0.0.1`
 - Type and Svelte checks: `npm run check`
+- Unit tests (Vitest): `npm test`
 - Production build: `npm run build`
+
+The app uses Svelte 5 runes (`$state`, `$derived`, `$props`). Write new components in runes mode and keep reusable UI in `src/lib/components`.
 
 For frontend changes, verify the relevant route in the in-app browser at `http://127.0.0.1:5173`.
 
@@ -42,6 +45,6 @@ For frontend changes, verify the relevant route in the in-app browser at `http:/
 
 Run the smallest checks that match the change:
 
-- Server, data, or shared logic: `npm run check`
+- Server, data, or shared logic: `npm run check` and `npm test`
 - Build-sensitive routing or Svelte changes: `npm run build`
 - Chatbot/weather/location UX: browser test the affected route and click at least one suggested question or recommendation card.
