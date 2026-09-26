@@ -3,38 +3,32 @@
       {
         name: '타임캡슐공원',
         description: '강원도 정선에 위치한 공원으로, 빛공해가 적고 고도가 높은 강원도라서 추천할 만한 장소입니다.',
-        // image: '/path/to/hallasan.jpg',
         locate:'강원특별자치도 정선군 신동읍 엽기소나무길 518-23'
       },     
        {
         name: '안반데기',
         description: '강원도 강릉에 위치한 고랭지 농원으로, 부지가 넓고 차박도 가능해 밤새 별을 여유롭게 볼 수 있는 장소입니다.',
-        // image: '/path/to/hallasan.jpg',
         locate:'강원특별자치도 강릉시 왕산면 안반데기길 428'
       },
       {
       name: '보현산천문대',
       description: '경상북도 영천시에 위치한 천문대로, 경상도에 살고 계시다면 추천할 만한 장소입니다.',
-      // image: '/path/to/bohyunsan.jpg',
       locate:'경북 영천시 화북면 정각리 산 6-1'
 
     },
       {
         name: '토함산 수목경관숲',
         description: '경주시에 위치한 풍력발전소 부지로, 차로 쉽게 갈 수 있고 차박도 가능한 장소입니다.',
-        // image: '/path/to/sobaeksan.jpg',
         locate:'경북 경주시 문무대왕면 장항리 산 599-6'
       },
       {
         name: '군위 화산 산성 전망대',
         description: '대구 군위군에 위치한 전망대로, 대구 근교에 위치해 이쁜 풍차와 함께 사진을 찍을 수 있습니다.',
-        // image: '/path/to/miwon.jpg',
-       locate:'대구 군위군 삼국유사면 화북리 산 243'
+        locate:'대구 군위군 삼국유사면 화북리 산 243'
       },
       {
       name: '영양 반딧불이천문대',
       description: '경상북도 영양군에 위치한 천문대로, 아시아 최초로 국제밤하늘보호공원으로 지정된 장소입니다.',
-      // image: '/path/to/juwangsan.jpg',
       locate:'경북 영양군 수비면 반딧불이로 129'
     },
     {name:'용계의 은행나무',
@@ -75,7 +69,6 @@
   <div class="observatories">
     {#each observatories as observatory}
       <div class="observatory">
-        <!-- <img src={observatory.image} alt={observatory.name} /> -->
         <h2>{observatory.name}</h2>
         <p>{observatory.description}</p>
         <p class="locate">{observatory.locate}</p>

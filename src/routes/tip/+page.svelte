@@ -5,26 +5,22 @@
       {
         title: '관측 장소 선택',
         description: '인공조명이 적은 어두운 장소를 선택하세요. 시야를 가리는 장애물이 없는 개방된 공간이 좋습니다. 대기 조건이 안정적인 곳을 찾으세요.',
-        image: 'path/to/image1.jpg',
         smalldes:'장소 게시판을 통해 본인에게 맞는 관측 장소를 찾으세요.'
       },
       {
         title: '장비 준비',
         description: '관측 대상과 목적에 맞는 적절한 망원경이나 쌍안경을 준비하세요. 삼각대를 사용하여 장비를 안정적으로 고정하세요. 필요한 경우 기타 액세서리(접안렌즈, 바로우렌즈, 필터 등)도 준비하세요.',
-        image: 'path/to/image2.jpg',
         smalldes:'스마트폰과 삼각대만 있어도 충분히 좋은 사진을 찍을 수 있어요 !'
 
       },
       {
         title: '관측 계획 세우기',
         description: '관측하고자 하는 천체의 위치와 시간을 미리 파악하세요. 천문 관측 앱이나 소프트웨어를 활용하면 도움이 됩니다. 계절과 시간에 따른 별자리의 위치를 숙지하세요.',
-        image: 'path/to/image3.jpg',
         smalldes:'별자리를 쉽게 찾고 싶다면 stellarium 앱을 통해 확인하면 편하답니다.'
       },
       {
         title: '시력 적응',
         description: '관측 전 약 20-30분 정도 어둠에 눈을 적응시키세요. 붉은색 조명을 사용하면 야간 시력 유지에 도움이 됩니다. 관측 중 스마트폰이나 밝은 조명을 피하세요.',
-        image: 'path/to/image4.jpg',
         smalldes:'별을 보기 위한 장소에 도착했다면 휴대폰 밝기는 최대한 낮추고 가급적 휴대폰을 켜지 않도록 해주세요 !'
       },
       {
@@ -36,13 +32,11 @@
       // {
       //   title: '기록 및 스케치',
       //   description: '관측일지를 작성하여 관측 내용을 기록하세요. 스케치를 통해 관측한 천체의 모습을 그려보세요. 사진 촬영을 하는 경우 장비의 설정을 적절히 조절하세요.',
-      //   image: 'path/to/image6.jpg',
       //   smalldes:''
       // },
       // {
       //   title: '동료와 함께 관측',
       //   description: '천문 동호회나 클럽에 참여하여 경험을 공유하세요. 함께 관측하면 더 많은 것을 볼 수 있고 즐거움도 배가 됩니다. 서로의 지식과 경험을 나누며 배울 수 있습니다.',
-      //   image: 'path/to/image7.jpg',
       //   smalldes:''
       // },
       {
@@ -75,7 +69,6 @@
     {#each tips as tip, index}
       <section class="sections">
         <h2>{index + 1}. {tip.title}</h2>
-        <!-- <img src={tip.image} alt={tip.title} /> -->
         <p>{tip.description}</p>
         <div class="small-description">{tip.smalldes}</div>
       </section>
