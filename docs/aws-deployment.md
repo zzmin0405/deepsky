@@ -44,13 +44,19 @@ NODE_ENV=production
 HOST=0.0.0.0
 PORT=3000
 ORIGIN=https://실제-도메인
+ADDRESS_HEADER=X-Forwarded-For
+XFF_DEPTH=1
+GEMINI_MODEL=gemini-3.6-flash
 ```
 
-민감한 값은 이미지나 Task Definition의 평문 환경변수에 넣지 않고 Secrets Manager에서 주입합니다.
+ALB 뒤에서는 `ADDRESS_HEADER`와 `XFF_DEPTH`가 있어야 `getClientAddress()`가 실제 사용자 IP를 돌려주고 rate limit이 사용자별로 동작합니다. 설정하지 않으면 모든 요청이 로드 밸런서 IP 하나로 묶여 한도를 함께 쓰게 됩니다. CloudFront를 ALB 앞에 두면 프록시가 두 단계이므로 `XFF_DEPTH=2`로 맞춥니다.
+
+민감한 값은 이미지나 Task Definition의 평문 환경변수에 넣지 않고 Secrets Manager에서 주입합니다. API 키는 실행 시점에 읽으므로 이미지 빌드에는 비밀값이 필요 없습니다.
 
 ```text
 DATABASE_URL
 GEMINI_API_KEY
+DATA_GO_KR_SERVICE_KEY
 OPENWEATHER_API_KEY
 ```
 

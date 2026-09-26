@@ -1,14 +1,13 @@
 <script>
-    export let data;
-    export let form;
     import { enhance } from '$app/forms';
     import { goto } from '$app/navigation';
+    let { data, form } = $props();
 
     function handleCancel() {
         goto(`/community/posts/${data.post.id}`);
     }
 
-    let isSubmitting = false;
+    let isSubmitting = $state(false);
 
     // 입력값 검증 함수
     function validateInput(input, maxLength) {
@@ -44,14 +43,13 @@
         action="?/updatePost" 
         method="POST" 
         class="edit-form"
-        on:submit={handleSubmit}
+        onsubmit={handleSubmit}
         use:enhance={() => {
             isSubmitting = true;
-            return async ({ result }) => {
+            return async ({ update }) => {
+                // 기본 동작(update)을 불러야 비밀번호 오류 같은 실패 메시지가 form에 반영되고, 성공 시 이동합니다.
+                await update();
                 isSubmitting = false;
-                if (result.type === 'redirect') {
-                    goto(result.location);
-                }
             };
         }}
     >
@@ -102,7 +100,7 @@
             <button type="submit" class="submit-button" disabled={isSubmitting}>
                 {isSubmitting ? '수정 중...' : '수정하기'}
             </button>
-            <button type="button" class="cancel-button" on:click={handleCancel}>취소</button>
+            <button type="button" class="cancel-button" onclick={handleCancel}>취소</button>
         </div>
     </form>
 </div>

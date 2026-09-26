@@ -3,6 +3,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { verifyPassword } from '$lib/server/password';
 import { parsePostId, validatePostForm } from '$lib/server/postValidation';
+import { checkRateLimit, getClientAddress } from '$lib/server/rateLimit';
 
 function requirePostId(value) {
 	const id = parsePostId(value);
@@ -22,10 +23,20 @@ export async function load({ params }) {
 }
 
 export const actions = {
-	updatePost: async ({ request, params }) => {
+	updatePost: async (event) => {
+		const { request, params } = event;
 		const id = requirePostId(params.id);
 		const formData = await request.formData();
 		const parsed = validatePostForm(formData, { requireAuthor: false });
+
+		// 삭제와 같은 한도를 공유해 비밀번호 대입을 막습니다.
+		const rateLimit = checkRateLimit('post-password', getClientAddress(event), { limit: 10 });
+		if (!rateLimit.allowed) {
+			return fail(429, {
+				message: '비밀번호 확인 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.',
+				values: parsed.values
+			});
+		}
 
 		if (parsed.error) {
 			return fail(400, { message: parsed.error, values: parsed.values });

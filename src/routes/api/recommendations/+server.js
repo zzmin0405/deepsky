@@ -1,19 +1,9 @@
 import { json } from '@sveltejs/kit';
-import { buildBestObservationRecommendation } from '$lib/server/weatherContext';
+import { normalizeUserCoordinates } from '$lib/server/questionIntent';
 import { checkRateLimit, getClientAddress, rateLimitHeaders } from '$lib/server/rateLimit';
+import { buildBestObservationRecommendation } from '$lib/server/weatherContext';
 
 const DEFAULT_RECOMMENDATION_MESSAGE = '오늘 별 관측 장소 추천해줘';
-
-function normalizeUserLocation(value) {
-	if (!value || typeof value !== 'object') return null;
-
-	const latitude = Number(value.latitude);
-	const longitude = Number(value.longitude);
-	if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
-	if (latitude < 33 || latitude > 39 || longitude < 124 || longitude > 132) return null;
-
-	return { latitude, longitude };
-}
 
 function serializeRecommendation(recommendation) {
 	return {
@@ -52,7 +42,7 @@ export async function POST(event) {
 	try {
 		const body = await event.request.json();
 		const message = String(body?.message || DEFAULT_RECOMMENDATION_MESSAGE).slice(0, 200);
-		const userLocation = normalizeUserLocation(body?.userLocation);
+		const userLocation = normalizeUserCoordinates(body?.userLocation);
 		const recommendation = await buildBestObservationRecommendation(message, userLocation);
 
 		if (!recommendation.recommendations?.length) {

@@ -1,28 +1,27 @@
 <!-- src/routes/+layout.svelte -->
 <script>
-    import './styles.css';
-    let showMenu = false;
-    
-    function toggleMenu() {
-      showMenu = !showMenu;
-      if (showMenu) {
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = 'auto';
-      }
-    }
+  import './styles.css';
 
-    function closeMenu(event) {
-      if (!event.target.closest('.header-ul') && !event.target.closest('.menu-toggle')) {
-        showMenu = false;
-        document.body.style.overflow = 'auto';
-      }
+  /** @type {{ children: import('svelte').Snippet }} */
+  let { children } = $props();
+  let showMenu = $state(false);
+
+  // 모바일 메뉴가 열려 있는 동안에는 뒤 페이지가 스크롤되지 않게 막습니다.
+  function setMenu(open) {
+    showMenu = open;
+    document.body.style.overflow = open ? 'hidden' : 'auto';
+  }
+
+  function toggleMenu(event) {
+    event.stopPropagation();
+    setMenu(!showMenu);
+  }
+
+  function closeMenu(event) {
+    if (!event.target.closest('.header-ul') && !event.target.closest('.menu-toggle')) {
+      setMenu(false);
     }
-  
-    function handleMenuItemClick() {
-      showMenu = false;
-      document.body.style.overflow = 'auto';
-    }
+  }
 </script>
   
 <svelte:head>
@@ -31,18 +30,17 @@
   <meta name="keywords" content="DeepSky, 천문관측, 날씨, 관측 가능 여부, 전국 날씨" />
   <meta name="author" content="DeepSky" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 </svelte:head>
-<svelte:window on:click={closeMenu} />
+<svelte:window onclick={closeMenu} />
 
 <div class="app" class:menu-open={showMenu}>
   <div class="content">
-    <button class="header-ul-overlay" class:show={showMenu} type="button" aria-label="메뉴 닫기" on:click={() => { showMenu = false; document.body.style.overflow = 'auto'; }}></button>
+    <button class="header-ul-overlay" class:show={showMenu} type="button" aria-label="메뉴 닫기" onclick={() => setMenu(false)}></button>
     <header class="header">
       <nav>
-        <a class="brand" href="/" on:click={handleMenuItemClick}>
+        <a class="brand" href="/" onclick={() => setMenu(false)}>
           <span class="brand-mark">DS</span>
           <span class="brand-text">DeepSky</span>
         </a>
@@ -52,21 +50,21 @@
           aria-label={showMenu ? '메뉴 닫기' : '메뉴 열기'}
           aria-expanded={showMenu}
           aria-controls="main-navigation"
-          on:click|stopPropagation={toggleMenu}
+          onclick={toggleMenu}
         >
           <span class="menu-icon" class:open={showMenu} aria-hidden="true"></span>
         </button>
         <ul id="main-navigation" class="header-ul" class:show={showMenu}>
-          <li><a href="/" on:click={handleMenuItemClick}>홈</a></li>
+          <li><a href="/" onclick={() => setMenu(false)}>홈</a></li>
           <!-- <li><a on:click|preventDefault={() => handleNavigation('/community')}>자유게시판</a></li> -->
-          <li><a href="/tip" on:click={handleMenuItemClick}>팁 게시판</a></li>
-          <li><a href="/location" on:click={handleMenuItemClick}>장소 게시판</a></li>
-          <li><a href="/chatbot" on:click={handleMenuItemClick}>챗봇</a></li>
+          <li><a href="/tip" onclick={() => setMenu(false)}>팁 게시판</a></li>
+          <li><a href="/location" onclick={() => setMenu(false)}>장소 게시판</a></li>
+          <li><a href="/chatbot" onclick={() => setMenu(false)}>챗봇</a></li>
         </ul>
       </nav>
     </header>
     <main>
-      <slot />
+      {@render children()}
     </main>
     <footer class="footer">
       &copy; 2024 DeepSky. All rights reserved. 때때로 버그가 있을 수 있습니다.

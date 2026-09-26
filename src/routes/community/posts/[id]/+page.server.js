@@ -3,6 +3,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { verifyPassword } from '$lib/server/password';
 import { parsePostId } from '$lib/server/postValidation';
+import { checkRateLimit, getClientAddress } from '$lib/server/rateLimit';
 
 function requirePostId(value) {
 	const id = parsePostId(value);
@@ -22,8 +23,16 @@ export async function load({ params }) {
 }
 
 export const actions = {
-	deletePost: async ({ request, params }) => {
+	deletePost: async (event) => {
+		const { request, params } = event;
 		const id = requirePostId(params.id);
+
+		// 비밀번호 대입을 막기 위해 수정·삭제 시도를 IP당 분당 횟수로 제한합니다.
+		const rateLimit = checkRateLimit('post-password', getClientAddress(event), { limit: 10 });
+		if (!rateLimit.allowed) {
+			return fail(429, { message: '비밀번호 확인 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.' });
+		}
+
 		const formData = await request.formData();
 		const password = String(formData.get('password') || '');
 		const post = await db.post.findUnique({ where: { id } });

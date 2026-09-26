@@ -1,14 +1,12 @@
 <script>
-    export let form;
+    import { untrack } from 'svelte';
 
-    let isSubmitting = false;
-    let content = form?.values?.content ?? '';
-    let charCount = content.length;
+    let { form } = $props();
 
-    function updateCharCount(event) {
-        content = event.target.value;
-        charCount = content.length;
-    }
+    // 서버 검증에 실패해 다시 그려질 때 입력했던 본문을 되살립니다. 이후에는 사용자가 입력한 값을 따릅니다.
+    let content = $state(untrack(() => form?.values?.content ?? ''));
+    let charCount = $derived(content.length);
+    let isSubmitting = $state(false);
 </script>
 
 <div class="container">
@@ -20,7 +18,8 @@
         <h1 class="page-title">새 글 작성</h1>
     </div>
 
-    <form action="?/createPost" method="POST" class="post-form">
+    <!-- 제출 중에는 버튼을 잠가 중복 작성을 막습니다. -->
+    <form action="?/createPost" method="POST" class="post-form" onsubmit={() => (isSubmitting = true)}>
         {#if form?.message}
             <div class="error-message">{form.message}</div>
         {/if}
@@ -49,7 +48,6 @@
                     placeholder="내용을 입력해주세요" 
                     maxlength="5000"
                     bind:value={content}
-                    on:input={updateCharCount}
                     required
                 ></textarea>
                 <span class="char-counter {charCount >= 5000 ? 'limit' : ''}">{charCount}/5000자</span>

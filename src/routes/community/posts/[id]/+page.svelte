@@ -1,6 +1,5 @@
 <script>
-    export let data;
-    export let form;
+    let { data, form } = $props();
 
     function formatDate(date) {
         return new Date(date).toLocaleDateString('ko-KR', {
