@@ -1,5 +1,9 @@
 <script>
     export let data;
+
+    function formatDate(date) {
+        return new Date(date).toLocaleString('ko-KR');
+    }
 </script>
 
 <div class="container">
@@ -16,9 +20,11 @@
 
     <div class="navigation-bar">
         <a href="/community/posts" class="nav-link active">전체 글</a>
-        <a href="/community/popular" class="nav-link">인기 글</a>
-        <a href="/community/recent" class="nav-link">최신 글</a>
     </div>
+
+    {#if data.databaseUnavailable}
+        <p class="database-notice">데이터베이스에 연결할 수 없어 게시글을 불러오지 못했습니다.</p>
+    {/if}
 
     <div class="posts-container">
         {#each data.posts as post}
@@ -35,7 +41,7 @@
                         </span>
                         <span class="post-date">
                             <i class="fas fa-clock"></i>
-                            {post.created_at || '방금 전'}
+                            {formatDate(post.createdAt)}
                         </span>
                         {#if post.comments_count}
                             <span class="post-comments">
@@ -145,6 +151,14 @@
         display: flex;
         flex-direction: column;
         gap: 16px;
+    }
+
+    .database-notice {
+        padding: 14px 16px;
+        border: 1px solid #fed7aa;
+        border-radius: 10px;
+        background: #fff7ed;
+        color: #9a3412;
     }
 
     .post-card {

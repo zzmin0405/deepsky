@@ -1,7 +1,9 @@
 <script>
+    export let form;
+
     let isSubmitting = false;
-    let content = '';
-    let charCount = 0;
+    let content = form?.values?.content ?? '';
+    let charCount = content.length;
 
     function updateCharCount(event) {
         content = event.target.value;
@@ -19,6 +21,10 @@
     </div>
 
     <form action="?/createPost" method="POST" class="post-form">
+        {#if form?.message}
+            <div class="error-message">{form.message}</div>
+        {/if}
+
         <div class="form-group">
             <label class="form-label">
                 <span class="label-text">제목</span>
@@ -27,6 +33,8 @@
                     name="title" 
                     class="form-input"
                     placeholder="제목을 입력해주세요" 
+                    maxlength="100"
+                    value={form?.values?.title ?? ''}
                     required
                 >
             </label>
@@ -39,12 +47,12 @@
                     name="content" 
                     class="form-textarea"
                     placeholder="내용을 입력해주세요" 
-                    maxlength="1000"
+                    maxlength="5000"
                     bind:value={content}
                     on:input={updateCharCount}
                     required
                 ></textarea>
-                <span class="char-counter {charCount >= 1000 ? 'limit' : ''}">{charCount}/1000자</span>
+                <span class="char-counter {charCount >= 5000 ? 'limit' : ''}">{charCount}/5000자</span>
             </label>
         </div>
 
@@ -57,6 +65,8 @@
                         name="author" 
                         class="form-input"
                         placeholder="작성자명을 입력해주세요" 
+                        maxlength="50"
+                        value={form?.values?.author ?? ''}
                         required
                     >
                 </label>
@@ -91,6 +101,14 @@
         max-width: 800px;
         margin: 0 auto;
         padding: 40px 20px;
+    }
+
+    .error-message {
+        padding: 12px 14px;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        background: #fef2f2;
+        color: #b91c1c;
     }
 
     .form-header {

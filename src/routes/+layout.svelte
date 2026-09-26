@@ -1,13 +1,9 @@
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- src/routes/+layout.svelte -->
 <script>
     import './styles.css';
     let showMenu = false;
     
-    function toggleMenu(event) {
-      event.stopPropagation();
+    function toggleMenu() {
       showMenu = !showMenu;
       if (showMenu) {
         document.body.style.overflow = 'hidden';
@@ -15,7 +11,7 @@
         document.body.style.overflow = 'auto';
       }
     }
-  
+
     function closeMenu(event) {
       if (!event.target.closest('.header-ul') && !event.target.closest('.menu-toggle')) {
         showMenu = false;
@@ -23,19 +19,14 @@
       }
     }
   
-    function handleMenuItemClick(event) {
-      event.stopPropagation();
+    function handleMenuItemClick() {
       showMenu = false;
       document.body.style.overflow = 'auto';
-    }
-
-    function handleNavigation(path) {
-      window.location.href = path;
     }
 </script>
   
 <svelte:head>
-  <title>DeepSky - 전국 천문관측 가능 여부 조회 서비스</title>
+  <title>DeepSky</title>
   <meta name="description" content="DeepSky에서 대한민국 전역의 천문관측 가능 여부를 조회해보세요. 시간대별 상세 날씨 정보와 함께 천문관측에 적합한 날씨인지 확인할 수 있습니다." />
   <meta name="keywords" content="DeepSky, 천문관측, 날씨, 관측 가능 여부, 전국 날씨" />
   <meta name="author" content="DeepSky" />
@@ -45,33 +36,32 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 </svelte:head>
 <svelte:window on:click={closeMenu} />
-  
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="header-ul-overlay" class:show={showMenu} on:click={() => { showMenu = false; document.body.style.overflow = 'auto'; }}></div>
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+
 <div class="app" class:menu-open={showMenu}>
   <div class="content">
+    <button class="header-ul-overlay" class:show={showMenu} type="button" aria-label="메뉴 닫기" on:click={() => { showMenu = false; document.body.style.overflow = 'auto'; }}></button>
     <header class="header">
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <nav>
-        <!-- <h1><a href="/" on:click|preventDefault={() => handleNavigation('/')}>홈</a></h1> -->
-        <div class="menu-toggle" on:click|preventDefault|stopPropagation={toggleMenu}>
-          <i class="fas fa-bars"></i>
-        </div>
-        <ul class="header-ul" class:show={showMenu}>
-          <div class="close-menu-toggle" on:click|preventDefault|stopPropagation={toggleMenu}>
-            <i class="fas fa-times"></i>
-          </div>
-          <li><a on:click|preventDefault={() => handleNavigation('/')}>홈</a></li>
-          <li><a on:click|preventDefault={() => handleNavigation('/community')}>자유게시판</a></li>
-          <li><a on:click|preventDefault={() => handleNavigation('/tip')}>팁 게시판</a></li>
-          <li><a on:click|preventDefault={() => handleNavigation('/location')}>장소 게시판</a></li>
-          <li><a on:click|preventDefault={() => handleNavigation('/chatbot')}>챗봇</a></li>
-          <li><a on:click|preventDefault={() => handleNavigation('/contact')}>문의사항</a></li>
+        <a class="brand" href="/" on:click={handleMenuItemClick}>
+          <span class="brand-mark">DS</span>
+          <span class="brand-text">DeepSky</span>
+        </a>
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-label={showMenu ? '메뉴 닫기' : '메뉴 열기'}
+          aria-expanded={showMenu}
+          aria-controls="main-navigation"
+          on:click|stopPropagation={toggleMenu}
+        >
+          <span class="menu-icon" class:open={showMenu} aria-hidden="true"></span>
+        </button>
+        <ul id="main-navigation" class="header-ul" class:show={showMenu}>
+          <li><a href="/" on:click={handleMenuItemClick}>홈</a></li>
+          <!-- <li><a on:click|preventDefault={() => handleNavigation('/community')}>자유게시판</a></li> -->
+          <li><a href="/tip" on:click={handleMenuItemClick}>팁 게시판</a></li>
+          <li><a href="/location" on:click={handleMenuItemClick}>장소 게시판</a></li>
+          <li><a href="/chatbot" on:click={handleMenuItemClick}>챗봇</a></li>
         </ul>
       </nav>
     </header>
@@ -86,18 +76,19 @@
   
 <style>
 .app {
-  /* background-image: url('/src/123.jpg'); */
-  background-color: rgba(189, 231, 255, 0.904);
+  background:
+    linear-gradient(rgba(8, 17, 31, 0.82), rgba(8, 17, 31, 0.88)),
+    url('/deepsky-bg.JPG');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   width: 100%;
   min-height: 100vh;
-  position: relative;  /* fixed에서 relative로 변경 */
+  position: relative;
   cursor: default;
-  color: black;
-  overflow-y: auto;  /* 스크롤 허용 */
+  color: var(--text);
+  overflow-y: auto;
 }
   
   :global(body) {
@@ -111,24 +102,56 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    overflow-y: auto;  /* 스크롤 허용 */
+    overflow-y: auto;
   }
   
   .header {
-    color: rgb(211, 156, 241);
-    padding: 20px;
-    background: linear-gradient(to right, #00000085, #bef7ff00);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    height: 73px;
+    box-sizing: border-box;
+    padding: 14px clamp(16px, 4vw, 42px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(8, 17, 31, 0.82);
+    backdrop-filter: blur(18px);
   }
   
   .header nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 44px;
+    max-width: 1180px;
+    margin: 0 auto;
+    gap: 18px;
   }
   
-  .header h1 {
-    margin: 0;
-    font-size: 1.5rem;
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #f8fafc;
+    text-decoration: none;
+    font-weight: 800;
+  }
+
+  .brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 50%;
+    background: linear-gradient(135deg, #60a5fa, #14b8a6);
+    color: #ffffff;
+    font-size: 0.78rem;
+    letter-spacing: 0;
+  }
+
+  .brand-text {
+    font-size: 1.15rem;
   }
   
   .header ul {
@@ -139,61 +162,102 @@
   }
   
   .header li {
-    margin-left: 20px;
-    padding: 10px;
+    margin: 0;
+    padding: 0;
     transition: all 0.3s ease-in-out;
-    border-radius: 10px;
+    border-radius: 8px;
     position: relative;
-    cursor: pointer;
   }
   
   .header li a {
-    color: rgb(255, 255, 255);
+    display: block;
+    color: #cbd5e1;
     text-decoration: none;
-    font-size: 1.3rem;
-    padding: 5px 10px;
+    font-size: 0.98rem;
+    font-weight: 700;
+    padding: 9px 12px;
+    border-radius: 8px;
     transition: all 0.3s ease;
   }
   
-  .header li:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-  }
-  
   .header li:hover a {
-    color: #474747;
-    text-shadow: 0 0 10px rgba(129, 129, 129, 0.5);
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.12);
   }
   
   .footer {
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(8, 17, 31, 0.86);
+    padding: 22px;
     text-align: center;
     font-size: 14px;
-    color: #c9c9c9;
+    color: #94a3b8;
   }
   
   main {
     flex: 1;
-    padding: 20px;
+    padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 32px);
     min-height: 400px;
   }
   
   .menu-toggle {
     display: none;
-    cursor: pointer;
-    font-size: 24px;
-    color: white;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+
+  .menu-icon,
+  .menu-icon::before,
+  .menu-icon::after {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .menu-icon {
+    position: relative;
+  }
+
+  .menu-icon::before,
+  .menu-icon::after {
+    position: absolute;
+    left: 0;
+    content: '';
+  }
+
+  .menu-icon::before {
+    transform: translateY(-7px);
+  }
+
+  .menu-icon::after {
+    transform: translateY(7px);
+  }
+
+  .menu-icon.open {
+    background: transparent;
+  }
+
+  .menu-icon.open::before {
+    transform: rotate(45deg);
+  }
+
+  .menu-icon.open::after {
+    transform: rotate(-45deg);
   }
   
   .header-ul {
     display: flex;
     flex-direction: row;
     align-items: center;
-  }
-  
-  .close-menu-toggle {
-    display: none;
+    transition: none;
   }
   
   .app.menu-open {
@@ -203,7 +267,6 @@
   .app.menu-open .header,
   .app.menu-open .header-ul,
   .app.menu-open .menu-toggle,
-  .app.menu-open .close-menu-toggle,
   .app.menu-open .header a,
   .app.menu-open .header li {
     pointer-events: auto;
@@ -215,8 +278,11 @@
     left: 0;
     width: 100%;
     height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: -1;
+    z-index: 999;
     display: none;
     pointer-events: auto;
   }
@@ -227,36 +293,38 @@
   
   @media screen and (max-width: 768px) {
     .header-ul {
-      position: fixed;
-      top: -100%;
+      position: absolute;
+      top: 100%;
       left: 0;
+      right: 0;
+      box-sizing: border-box;
       width: 100%;
-      background-color: #ffffff;
-      padding: 60px 20px 20px;
+      background: rgba(8, 17, 31, 0.98);
+      padding: 14px 20px 22px;
       z-index: 1001;
-      transition: top 0.3s ease-in-out;
+      box-shadow: 0 18px 30px rgba(0, 0, 0, 0.26);
+      transform: translateY(calc(-100% - 73px));
       flex-direction: column;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
   
     .header-ul.show {
-      top: 0;
+      transform: translateY(0);
     }
   
     .header li {
-      margin: 10px 0;
+      margin: 2px 0;
       width: 100%;
-      text-align: center;
+      text-align: left;
       padding: 0;
     }
   
     .header li a {
-      color: #1e293b;
+      color: #cbd5e1;
       display: block;
-      padding: 12px;
+      padding: 13px 14px;
       border-radius: 8px;
       transition: all 0.2s ease;
-      font-weight: 500;
+      font-weight: 600;
     }
   
     .header li:hover {
@@ -265,28 +333,16 @@
     }
   
     .header li:hover a {
-      color: #6366f1;
-      background-color: #f1f5f9;
-      padding-left: 25px;
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.12);
+      padding-left: 18px;
       text-shadow: none;
     }
   
     .menu-toggle {
-      display: block;
+      display: inline-flex;
       z-index: 1002;
       position: relative;
     }
-  
-    .close-menu-toggle {
-      display: block;
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 24px;
-      color: #1e293b;
-      cursor: pointer;
-      z-index: 1002;
-    }
   }
 </style>
-  

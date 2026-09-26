@@ -1,5 +1,6 @@
 <script>
     export let data;
+    export let form;
 
     function formatDate(date) {
         return new Date(date).toLocaleDateString('ko-KR', {
@@ -24,36 +25,25 @@
             목록으로
         </a>
         <div class="post-actions">
-            {#if data.user && data.user.isAdmin}
-                <div class="admin-actions">
-                    <a href="/community/posts/{data.post.id}/edit" class="edit-button admin">
-                        <i class="fas fa-edit"></i>
-                        관리자 수정
-                    </a>
-                    <form action="?/deletePostByAdmin" method="POST" class="delete-form admin">
-                        <button type="submit" class="delete-button admin">
-                            <i class="fas fa-trash"></i>
-                            관리자 삭제
-                        </button>
-                    </form>
-                </div>
-            {:else}
-                <div class="user-actions">
-                    <a href="/community/posts/{data.post.id}/edit" class="edit-button">
-                        <i class="fas fa-edit"></i>
-                        수정
-                    </a>
-                    <form action="?/deletePost" method="POST" class="delete-form">
-                        <input type="password" name="password" placeholder="비밀번호" required class="password-input">
-                        <button type="submit" class="delete-button">
-                            <i class="fas fa-trash"></i>
-                            삭제
-                        </button>
-                    </form>
-                </div>
-            {/if}
+            <div class="user-actions">
+                <a href="/community/posts/{data.post.id}/edit" class="edit-button">
+                    <i class="fas fa-edit"></i>
+                    수정
+                </a>
+                <form action="?/deletePost" method="POST" class="delete-form">
+                    <input type="password" name="password" placeholder="비밀번호" required class="password-input">
+                    <button type="submit" class="delete-button">
+                        <i class="fas fa-trash"></i>
+                        삭제
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
+
+    {#if form?.message}
+        <p class="action-error">{form.message}</p>
+    {/if}
 
     <article class="post-content">
         <h1 class="post-title">{data.post.title}</h1>
@@ -116,7 +106,7 @@
         gap: 16px;
     }
 
-    .admin-actions, .user-actions {
+    .user-actions {
         display: flex;
         gap: 12px;
         align-items: center;
@@ -155,19 +145,6 @@
         background: #fecaca;
     }
 
-    .edit-button.admin {
-        background: #e0f2fe;
-        color: #0284c7;
-    }
-
-    .edit-button.admin:hover {
-        background: #bae6fd;
-    }
-
-    .delete-button.admin {
-        background: #fef2f2;
-    }
-
     .delete-form {
         display: flex;
         gap: 8px;
@@ -191,6 +168,15 @@
         border-radius: 16px;
         padding: 40px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-error {
+        margin: -20px 0 20px;
+        padding: 12px 14px;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        background: #fef2f2;
+        color: #b91c1c;
     }
 
     .post-title {
@@ -256,7 +242,7 @@
             width: 100%;
         }
 
-        .admin-actions, .user-actions {
+        .user-actions {
             width: 100%;
             flex-wrap: wrap;
         }

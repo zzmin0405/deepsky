@@ -1,6 +1,5 @@
 <!-- +page.svelte -->
 <script>
-	import { isPast } from "date-fns";
 
     const tips = [
       {

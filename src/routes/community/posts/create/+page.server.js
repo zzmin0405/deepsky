@@ -1,35 +1,34 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { supabase } from '$lib/supabase';
+import { db } from '$lib/server/db';
+import { hashPassword } from '$lib/server/password';
+import { validatePostForm } from '$lib/server/postValidation';
 
 export const actions = {
-  createPost: async ({ request }) => {
-    const data = await request.formData();
-    const title = data.get('title');
-    const content = data.get('content');
-    const author = data.get('author');
-    const password = data.get('password');
+	createPost: async ({ request }) => {
+		const formData = await request.formData();
+		const parsed = validatePostForm(formData);
 
-    if (!title || !content || !author || !password) {
-      return fail(400, { message: '모든 필드를 입력해 주세요.' });
-    }
+		if (parsed.error) {
+			return fail(400, { message: parsed.error, values: parsed.values });
+		}
 
-    const { error } = await supabase
-      .from('posts')
-      .insert([
-        {
-          title,
-          content,
-          author,
-          password,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ]);
+		try {
+			await db.post.create({
+				data: {
+					title: parsed.values.title,
+					content: parsed.values.content,
+					author: parsed.values.author,
+					passwordHash: await hashPassword(parsed.password)
+				}
+			});
+		} catch (error) {
+			console.error('MySQL post create error:', error.message);
+			return fail(503, {
+				message: '데이터베이스 연결 문제로 게시글을 저장하지 못했습니다.',
+				values: parsed.values
+			});
+		}
 
-    if (error) {
-      return fail(500, { message: '게시물 생성 중 오류가 발생했습니다.' });
-    }
-
-    throw redirect(302, '/community/posts');
-  }
+		throw redirect(303, '/community/posts');
+	}
 };

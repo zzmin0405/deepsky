@@ -1,6 +1,6 @@
 // src/lib/api/weather.js
 import axios from 'axios';
-import { format ,subDays} from 'date-fns';
+import { format } from 'date-fns';
 
 const API_KEY = 'UVW4wG79WCklkQiInTEfdiSZ9QrsV1j3HoYYdoVYzjRPkZkjPYnskKpBVdBHAH5xiyeacby4Zce%2FVv2HqgIUOA%3D%3D';
 const API_URL = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst';
@@ -46,7 +46,7 @@ function dfs_xy_conv(code, v1, v2) {
   return rs;
 }
 
-function convertToGrid(lat, lon) {
+export function getWeatherGrid(lat, lon) {
   const rs = dfs_xy_conv("toXY", lat, lon);
   const nx = rs.x;
   const ny = rs.y;
@@ -55,17 +55,53 @@ function convertToGrid(lat, lon) {
 }
 
 export async function getWeather(latitude, longitude) {
-  const today = new Date();
-  const yesterday = subDays(today, 1);
-  const formattedYesterday = format(yesterday, 'yyyyMMdd');
-  
-  const { nx, ny } = convertToGrid(latitude, longitude);
-  console.log('Converted Coordinates:', nx, ny);
-  const url = `${API_URL}?serviceKey=${API_KEY}&pageNo=1&numOfRows=2000&dataType=JSON&base_date=${formattedYesterday}&base_time=2000&nx=${nx}&ny=${ny}`;
-  const response = await axios.get(url);
-  if (response.data.response.header.resultCode === '00') {
-    return response.data.response.body.items.item;
-  } else {
-    throw new Error('API Error: ' + response.data.response.header.resultMsg);
+  // Calculate the most recent base_date and base_time for the API call
+  const getBaseDateTime = () => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinutes = now.getMinutes();
+    let baseDate = new Date();
+
+    // API base times are 02, 05, 08, 11, 14, 17, 20, 23.
+    // Data is available approximately 10 minutes past the hour.
+    const baseTimes = [23, 20, 17, 14, 11, 8, 5, 2];
+    let baseTime = '';
+
+    for (const hour of baseTimes) {
+      if (currentHour > hour || (currentHour === hour && currentMinutes >= 10)) {
+        baseTime = `${String(hour).padStart(2, '0')}00`;
+        break;
+      }
+    }
+
+    // If the current time is before 02:10, use the previous day's 23:00 data.
+    if (baseTime === '') {
+      baseTime = '2300';
+      baseDate.setDate(baseDate.getDate() - 1);
+    }
+
+    return {
+      base_date: format(baseDate, 'yyyyMMdd'),
+      base_time: baseTime
+    };
+  };
+
+  const { base_date, base_time } = getBaseDateTime();
+  const { nx, ny } = getWeatherGrid(latitude, longitude);
+
+  // Reduced numOfRows from 2000 to 1000 for better performance.
+  const url = `${API_URL}?serviceKey=${API_KEY}&pageNo=1&numOfRows=1000&dataType=JSON&base_date=${base_date}&base_time=${base_time}&nx=${nx}&ny=${ny}`;
+
+  try {
+    const response = await axios.get(url, { timeout: 5000 });
+    if (response.data.response.header.resultCode === '00') {
+      return response.data.response.body.items.item;
+    } else {
+      console.error('Weather API Error:', response.data.response.header.resultMsg);
+      throw new Error('API Error: ' + response.data.response.header.resultMsg);
+    }
+  } catch (error) {
+    console.error('Failed to fetch weather data:', error);
+    throw error;
   }
 }

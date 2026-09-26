@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -8,11 +8,71 @@ generator client {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String
-  author    String
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  title        String   @db.VarChar(100)
+  content      String   @db.Text
+  author       String   @db.VarChar(50)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([createdAt])
+  @@map("posts")
+}
+
+model WeatherCache {
+  id                       Int      @id @default(autoincrement())
+  locationName             String   @map("location_name") @db.VarChar(100)
+  province                 String   @db.VarChar(50)
+  city                     String   @db.VarChar(50)
+  latitude                 Float?
+  longitude                Float?
+  forecastDate             String   @map("forecast_date") @db.Char(8)
+  forecastTime             String   @map("forecast_time") @db.Char(4)
+  temperature              Float?
+  humidity                 Float?
+  sky                      Int?
+  skyText                  String?  @map("sky_text") @db.VarChar(30)
+  precipitationType        Int?     @map("precipitation_type")
+  precipitationText        String?  @map("precipitation_text") @db.VarChar(30)
+  precipitationProbability Float?   @map("precipitation_probability")
+  precipitationAmount      String?  @map("precipitation_amount") @db.VarChar(50)
+  snowfall                 String?  @db.VarChar(50)
+  isObservable             Boolean? @map("is_observable")
+  source                   String   @default("kma_vilage_fcst") @db.VarChar(50)
+  fetchedAt                DateTime @default(now()) @map("fetched_at")
+  createdAt                DateTime @default(now()) @map("created_at")
+
+  @@unique([locationName, forecastDate, forecastTime])
+  @@index([forecastDate, forecastTime])
+  @@index([fetchedAt])
+  @@map("weather_cache")
+}
+
+model ObservingPlace {
+  id                   Int      @id @default(autoincrement())
+  name                 String   @unique @db.VarChar(100)
+  province             String   @db.VarChar(50)
+  city                 String   @db.VarChar(50)
+  latitude             Float?
+  longitude            Float?
+  siteScore            Float    @default(0) @map("site_score")
+  elevationM           Int?     @map("elevation_m")
+  lightPollutionScore  Float?   @map("light_pollution_score")
+  bortleClass          Float?   @map("bortle_class")
+  sqmMagArcsec2        Float?   @map("sqm_mag_arcsec2")
+  lightPollutionYear   Int?     @map("light_pollution_year")
+  lightPollutionSource String?  @map("light_pollution_source") @db.VarChar(255)
+  opennessScore        Float?   @map("openness_score")
+  accessScore          Float?   @map("access_score")
+  description          String   @db.Text
+  document             String   @db.Text
+  tags                 Json
+  isActive             Boolean  @default(true) @map("is_active")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, siteScore])
+  @@index([province, city])
+  @@map("observing_places")
 }

@@ -1,0 +1,141 @@
+{
+  "source": {
+    "name": "LightPollutionMap.app",
+    "url": "https://lightpollutionmap.app",
+    "attribution": "LightPollutionMap.app, NOAA VIIRS, SQM palette reference D. Lorenz",
+    "method": "Opened each candidate coordinate in the in-app browser using https://lightpollutionmap.app/en/?lat={lat}&lng={lon}&zoom=11 and extracted the Location Details panel.",
+    "retrievedAt": "2026-05-30",
+    "notes": [
+      "Bortle and SQM values are point samples for the listed coordinates, not official venue measurements.",
+      "Coordinates marked manual approximate should be verified before production use."
+    ]
+  },
+  "samples": [
+    {
+      "name": "안반데기",
+      "latitude": 37.6228243,
+      "longitude": 128.7504048,
+      "coordinateSource": "Nominatim: 안반데기길",
+      "year": 2024,
+      "bortle": 4.8,
+      "sqmMagArcsec2": 20.84,
+      "category": "Moderate",
+      "milkyWay": "Fair - Visible but lacks detail",
+      "visibleStars": "1,000-2,000",
+      "trend": "From 2020 to 2026, artificial brightness ratio changed from 1.64x to 2.21x natural sky brightness.",
+      "brightnessChange": "Brightness change: 15.1% increasing from last year"
+    },
+    {
+      "name": "육백마지기",
+      "latitude": 37.4706,
+      "longitude": 128.5536,
+      "coordinateSource": "manual approximate: 청옥산 육백마지기",
+      "year": 2024,
+      "bortle": 4.3,
+      "sqmMagArcsec2": 21.28,
+      "category": "Moderate",
+      "milkyWay": "Fair - Visible but lacks detail",
+      "visibleStars": "1,000-2,000",
+      "trend": "From 2020 to 2026, artificial brightness ratio changed from 0.78x to 0.82x natural sky brightness.",
+      "brightnessChange": "Brightness change: 12.5% decreasing from last year"
+    },
+    {
+      "name": "별마로천문대 일대",
+      "latitude": 37.193393,
+      "longitude": 128.495475,
+      "coordinateSource": "Nominatim: 별마로천문대",
+      "year": 2024,
+      "bortle": 5.1,
+      "sqmMagArcsec2": 20.51,
+      "category": "Moderate",
+      "milkyWay": "Fair - Visible but lacks detail",
+      "visibleStars": "1,000-2,000",
+      "trend": "From 2020 to 2026, artificial brightness ratio changed from 2.53x to 3.21x natural sky brightness.",
+      "brightnessChange": "Brightness change: 8.2% increasing from last year"
+    },
+    {
+      "name": "태백 매봉산 바람의 언덕",
+      "latitude": 37.2112,
+      "longitude": 128.966903,
+      "coordinateSource": "Nominatim: 매봉산",
+      "year": 2024,
+      "bortle": 5.0,
+      "sqmMagArcsec2": 20.62,
+      "category": "Moderate",
+      "milkyWay": "Fair - Visible but lacks detail",
+      "visibleStars": "1,000-2,000",
+      "trend": "From 2020 to 2026, artificial brightness ratio changed from 2.12x to 3.02x natural sky brightness.",
+      "brightnessChange": "Brightness change: 16.9% increasing from last year"
+    },
+    {
+      "name": "조경철천문대 인근",
+      "latitude": 38.1157762,
+      "longitude": 127.4445784,
+      "coordinateSource": "Nominatim: 천문대길",
+      "year": 2024,
+      "bortle": 4.8,
+      "sqmMagArcsec2": 20.75,
+      "category": "Moderate",
+      "milkyWay": "Fair - Visible but lacks detail",
+      "visibleStars": "1,000-2,000",
+      "trend": "From 2020 to 2026, artificial brightness ratio changed from 1.81x to 2.36x natural sky brightness.",
+      "brightnessChange": "Brightness change: 9.3% increasing from last year"
+    },
+    {
+      "name": "무주 덕유산 자락",
+      "latitude": 35.8837985,
+      "longitude": 127.7236672,
+      "coordinateSource": "Nominatim: 무주덕유산CC vicinity",
+      "year": 2024,
+      "bortle": 4.8,
+      "sqmMagArcsec2": 20.85,
+      "category": "Moderate",
+      "milkyWay": "Fair - Visible but lacks detail",
+      "visibleStars": "1,000-2,000",
+      "trend": "From 2020 to 2026, artificial brightness ratio changed from 1.57x to 2.33x natural sky brightness.",
+      "brightnessChange": "Brightness change: 23.9% increasing from last year"
+    },
+    {
+      "name": "보은 속리산 말티재 일대",
+      "latitude": 36.5027,
+      "longitude": 127.8054,
+      "coordinateSource": "manual approximate: 보은 말티재",
+      "year": 2024,
+      "bortle": 5.0,
+      "sqmMagArcsec2": 20.54,
+      "category": "Moderate",
+      "milkyWay": "Fair - Visible but lacks detail",
+      "visibleStars": "1,000-2,000",
+      "trend": "From 2020 to 2026, artificial brightness ratio changed from 2.63x to 2.96x natural sky brightness.",
+      "brightnessChange": "Brightness change: 4.0% increasing from last year"
+    },
+    {
+      "name": "제주 1100고지",
+      "latitude": 33.3578491,
+      "longitude": 126.4624245,
+      "coordinateSource": "Nominatim: 1100로 1555",
+      "year": 2025,
+      "bortle": 5.0,
+      "sqmMagArcsec2": 20.46,
+      "category": "Moderate",
+      "milkyWay": "Fair - Visible but lacks detail",
+      "visibleStars": "1,000-2,000",
+      "trend": "From 2020 to 2026, artificial brightness ratio changed from 3.07x to 3.13x natural sky brightness.",
+      "brightnessChange": "Brightness change: 0.6% decreasing from last year"
+    },
+    {
+      "name": "새별오름",
+      "latitude": 33.3662548,
+      "longitude": 126.3576883,
+      "coordinateSource": "Nominatim: 새별오름",
+      "year": 2025,
+      "bortle": 5.3,
+      "sqmMagArcsec2": 20.23,
+      "category": "Moderate",
+      "milkyWay": "Fair - Visible but lacks detail",
+      "visibleStars": "1,000-2,000",
+      "trend": "From 2020 to 2026, artificial brightness ratio changed from 4.16x to 4.13x natural sky brightness.",
+      "brightnessChange": "Brightness change: 1.0% increasing from last year"
+    }
+  ]
+}

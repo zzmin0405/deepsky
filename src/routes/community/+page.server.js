@@ -1,12 +1,17 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { publicPostSelect } from '$lib/server/postFields';
+import { db } from '$lib/server/db';
 
 export async function load() {
-  const recentPosts = await prisma.post.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 5,
-  });
+	try {
+		const recentPosts = await db.post.findMany({
+			select: publicPostSelect,
+			orderBy: { createdAt: 'desc' },
+			take: 5
+		});
 
-  return { recentPosts };
+		return { recentPosts };
+	} catch (error) {
+		console.error('MySQL recent posts read error:', error.message);
+		return { recentPosts: [], databaseUnavailable: true };
+	}
 }

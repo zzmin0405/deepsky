@@ -1,53 +1,42 @@
-import { error } from '@sveltejs/kit';
-import { supabase } from '$lib/supabase';
+import { publicPostSelect } from '$lib/server/postFields';
+import { error, fail, redirect } from '@sveltejs/kit';
+import { db } from '$lib/server/db';
+import { verifyPassword } from '$lib/server/password';
+import { parsePostId } from '$lib/server/postValidation';
+
+function requirePostId(value) {
+	const id = parsePostId(value);
+	if (!id) throw error(400, '올바르지 않은 게시글 번호입니다.');
+	return id;
+}
 
 export async function load({ params }) {
-  const { data: post, error: fetchError } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('id', params.id)
-    .single();
+	const id = requirePostId(params.id);
+	const post = await db.post.findUnique({ where: { id }, select: publicPostSelect });
 
-  if (fetchError) {
-    throw error(404, '게시물을 찾을 수 없습니다.');
-  }
+	if (!post) {
+		throw error(404, '게시물을 찾을 수 없습니다.');
+	}
 
-  return { post };
+	return { post };
 }
 
 export const actions = {
-  deletePost: async ({ request, params }) => {
-    const data = await request.formData();
-    const password = data.get('password');
+	deletePost: async ({ request, params }) => {
+		const id = requirePostId(params.id);
+		const formData = await request.formData();
+		const password = String(formData.get('password') || '');
+		const post = await db.post.findUnique({ where: { id } });
 
-    const post = await supabase
-      .from('posts')
-      .select('*')
-      .eq('id', params.id)
-      .single();
+		if (!post) {
+			throw error(404, '게시물을 찾을 수 없습니다.');
+		}
 
-    if (!post) {
-      throw error(404, 'Post not found');
-    }
+		if (!(await verifyPassword(password, post.passwordHash))) {
+			return fail(400, { message: '비밀번호가 일치하지 않습니다.' });
+		}
 
-    if (post.password !== password) {
-      return { message: '비밀번호가 일치하지 않습니다.' };
-    }
-
-    await supabase
-      .from('posts')
-      .delete()
-      .eq('id', params.id);
-
-    return { redirect: '/community/posts' };
-  },
-
-  deletePostByAdmin: async ({ params }) => {
-    await supabase
-      .from('posts')
-      .delete()
-      .eq('id', params.id);
-
-    return { redirect: '/community/posts' };
-  },
+		await db.post.delete({ where: { id } });
+		throw redirect(303, '/community/posts');
+	}
 };

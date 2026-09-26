@@ -9,6 +9,10 @@
   </section>
 
   <div class="content-wrapper">
+    {#if data.databaseUnavailable}
+      <p class="database-notice">데이터베이스에 연결할 수 없어 최신 글을 불러오지 못했습니다.</p>
+    {/if}
+
     <section class="recent-posts">
       <div class="section-header">
         <h2>최신 글</h2>
@@ -72,6 +76,15 @@
   .content-wrapper {
     display: grid;
     gap: 30px;
+  }
+
+  .database-notice {
+    margin: 0;
+    padding: 14px 16px;
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+    background: #fff7ed;
+    color: #9a3412;
   }
 
   .section-header {

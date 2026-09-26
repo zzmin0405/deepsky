@@ -9,7 +9,7 @@
        {
         name: '안반데기',
         description: '강원도 강릉에 위치한 고랭지 농원으로, 부지가 넓고 차박도 가능해 밤새 별을 여유롭게 볼 수 있는 장소입니다.',
-        // image: '/path/to/hallasan.jpg',\
+        // image: '/path/to/hallasan.jpg',
         locate:'강원특별자치도 강릉시 왕산면 안반데기길 428'
       },
       {

@@ -1,16 +1,21 @@
 {
-	"name": "d",
+	"name": "deepsky",
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
+		"start": "node build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
+		"db:generate": "prisma generate",
+		"db:migrate": "prisma migrate dev",
+		"db:deploy": "prisma migrate deploy",
+		"db:seed": "prisma db seed"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/adapter-node": "^5.5.7",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"prisma": "^5.14.0",
@@ -20,12 +25,14 @@
 		"vite": "^5.0.3"
 	},
 	"type": "module",
+	"prisma": {
+		"seed": "node prisma/seed.js"
+	},
 	"dependencies": {
 		"@prisma/client": "^5.14.0",
-		"@supabase/supabase-js": "^2.49.4",
-		"@sveltejs/adapter-node": "^5.0.1",
 		"axios": "^1.7.2",
 		"date-fns": "^3.6.0",
+		"dompurify": "^3.4.14",
 		"marked": "^15.0.7"
 	}
 }

@@ -5,148 +5,207 @@
 	import { writable } from 'svelte/store';
 	import { format, addDays } from 'date-fns';
 	import { getMoonRiseSet } from '$lib/api/moonRiseSet';
+	import { locations } from '$lib/constants/locations.js';
 
-  let moonData = null;
-  let selectedMoonDay = 'today';
+	let moonData = null;
+	let selectedMoonDay = 'today';
 
-  async function fetchMoonData(date) {
-    try {
-      moonData = await getMoonRiseSet(37, 127, date);
-    } catch (error) {
-      console.error('Error fetching moon data:', error);
-      moonData = null;
-    }
-  }
+	async function fetchMoonData(date) {
+		try {
+			moonData = await getMoonRiseSet(37, 127, date);
+		} catch (error) {
+			console.error('Error fetching moon data:', error);
+			moonData = null;
+		}
+	}
 
-  async function updateMoonData(day) {
-    selectedMoonDay = day;
-    const targetDate = new Date(currentDate);
-    
-    if (day === 'tomorrow') {
-      targetDate.setDate(targetDate.getDate() + 1);
-    } else if (day === 'dayAfterTomorrow') {
-      targetDate.setDate(targetDate.getDate() + 2);
-    }
+	async function updateMoonData(day) {
+		selectedMoonDay = day;
+		const targetDate = new Date(currentDate);
 
-    try {
-      // 서울의 대략적인 좌표 사용
-      moonData = await getMoonRiseSet(37.5665, 126.9780, targetDate);
-      console.log('Moon data:', moonData); // 디버깅용
-    } catch (error) {
-      console.error('Error fetching moon data:', error);
-      moonData = null;
-    }
-  }
+		if (day === 'tomorrow') {
+			targetDate.setDate(targetDate.getDate() + 1);
+		} else if (day === 'dayAfterTomorrow') {
+			targetDate.setDate(targetDate.getDate() + 2);
+		}
 
-  onMount(() => {
-    updateMoonData('today');
-    
-    // 기본 날씨 데이터 생성 (모든 값이 "-"인 데이터)
-    if (!weatherData) {
-      const defaultWeatherData = [];
-      const times = ['0000', '0100', '0200', '0300', '0400', '0500', '0600', '0700', '0800', '0900', '1000', '1100', 
-                    '1200', '1300', '1400', '1500', '1600', '1700', '1800', '1900', '2000', '2100', '2200', '2300'];
-      
-      const today = format(currentDate, 'yyyyMMdd');
-      const tomorrow = format(addDays(currentDate, 1), 'yyyyMMdd');
-      const dayAfterTomorrow = format(addDays(currentDate, 2), 'yyyyMMdd');
-      
-      const dates = [today, tomorrow, dayAfterTomorrow];
-      const categories = ['TMP', 'SKY', 'PTY', 'POP', 'PCP', 'SNO', 'REH'];
-      
-      dates.forEach(date => {
-        times.forEach(time => {
-          categories.forEach(category => {
-            defaultWeatherData.push({
-              fcstDate: date,
-              fcstTime: time,
-              category: category,
-              fcstValue: '-'
-            });
-          });
-        });
-      });
-      
-      weatherData = defaultWeatherData;
-      selectedTime = '0000';
-    }
-  });
+		try {
+			// 서울의 대략적인 좌표 사용
+			moonData = await getMoonRiseSet(37.5665, 126.9780, targetDate);
+			console.log('Moon data:', moonData); // 디버깅용
+		} catch (error) {
+			console.error('Error fetching moon data:', error);
+			moonData = null;
+		}
+	}
+
+	onMount(async () => {
+		updateMoonData('today');
+
+		if (typeof window !== 'undefined' && navigator.geolocation) {
+			isLoading = true;
+			navigator.geolocation.getCurrentPosition(
+				async (position) => {
+					const userLat = position.coords.latitude;
+					const userLon = position.coords.longitude;
+					localStorage.setItem(
+						'deepsky:user-location',
+						JSON.stringify({ latitude: userLat, longitude: userLon, updatedAt: Date.now() })
+					);
+					const closestLocation = findClosestLocation(userLat, userLon);
+
+					if (closestLocation) {
+						province.set(closestLocation.province);
+						city.set(closestLocation.city);
+						// Immediately fetch weather for the found location
+						await fetchWeatherForLocation(closestLocation);
+					} else {
+						// If no location is found, initialize with default empty data
+						initializeDefaultWeather();
+					}
+					isLoading = false;
+				},
+				(error) => {
+					console.error('Error getting user location:', error);
+					// On error, initialize with default empty data
+					initializeDefaultWeather();
+					isLoading = false;
+				},
+				{
+					enableHighAccuracy: true,
+					timeout: 5000,
+					maximumAge: 0
+				}
+			);
+		} else {
+			console.error('Geolocation is not supported by this browser.');
+			// If geolocation is not supported, initialize with default empty data
+			initializeDefaultWeather();
+		}
+	});
+
+	// This new function handles the actual weather data fetching
+	async function fetchWeatherForLocation(location) {
+		if (!location) {
+			console.log('Location information is missing.');
+			weatherData = null;
+			isObservable = null;
+			isLoading = false;
+			return;
+		}
+
+		isLoading = true;
+		try {
+			weatherData = await getWeather(location.latitude, location.longitude);
+		} catch (error) {
+			console.error('Error fetching weather data:', error);
+			weatherData = null;
+			isObservable = null;
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	function initializeDefaultWeather() {
+		if (weatherData) return; // Already initialized
+
+		const defaultWeatherData = [];
+		const times = [
+			'0000',
+			'0100',
+			'0200',
+			'0300',
+			'0400',
+			'0500',
+			'0600',
+			'0700',
+			'0800',
+			'0900',
+			'1000',
+			'1100',
+			'1200',
+			'1300',
+			'1400',
+			'1500',
+			'1600',
+			'1700',
+			'1800',
+			'1900',
+			'2000',
+			'2100',
+			'2200',
+			'2300'
+		];
+
+		const today = format(currentDate, 'yyyyMMdd');
+		const tomorrow = format(addDays(currentDate, 1), 'yyyyMMdd');
+		const dayAfterTomorrow = format(addDays(currentDate, 2), 'yyyyMMdd');
+
+		const dates = [today, tomorrow, dayAfterTomorrow];
+		const categories = ['TMP', 'SKY', 'PTY', 'POP', 'PCP', 'SNO', 'REH'];
+
+		dates.forEach((date) => {
+			times.forEach((time) => {
+				categories.forEach((category) => {
+					defaultWeatherData.push({
+						fcstDate: date,
+						fcstTime: time,
+						category: category,
+						fcstValue: '-'
+					});
+				});
+			});
+		});
+
+		weatherData = defaultWeatherData;
+		selectedTime = '0000';
+	}
+
+	function getSquaredDistance(lat1, lon1, lat2, lon2) {
+		const dx = lat1 - lat2;
+		const dy = lon1 - lon2;
+		return dx * dx + dy * dy;
+	}
+
+	function findClosestLocation(userLat, userLon) {
+		let closest = null;
+		let minDistance = Infinity;
+
+		for (const loc of locations) {
+			const distance = getSquaredDistance(userLat, userLon, loc.latitude, loc.longitude);
+			if (distance < minDistance) {
+				minDistance = distance;
+				closest = loc;
+			}
+		}
+		return closest;
+	}
+
 	let weatherData = null;
 	let selectedDay = 'today';
 	let selectedTime = null;
 	let isObservable = null;
 	let isLoading = false;
 	let currentDate = new Date();
-   
-	const provinces = [...new Set($locationStore.locations.map(loc => loc.province))];
+	let suppressTimelineClick = false;
+
+	const provinces = [...new Set($locationStore.locations.map((loc) => loc.province))];
 	$: cities = $locationStore.locations
-	  .filter(loc => loc.province === $province)
-	  .map(loc => loc.city);
-   
+		.filter((loc) => loc.province === $province)
+		.map((loc) => loc.city);
+
+	// This function is now used by the button click
 	async function getWeatherAndCheckObservable() {
-	  if (!$province || !$city) {
-		alert('광역시/도와 시/군/구를 선택해주세요.');
-		return;
-	  }
-	 
-	  isLoading = true;
-	 
-	  const location = $locationStore.locations.find(
-		loc =>
-		  loc.province === $province &&
-		  loc.city === $city
-	  );
-	 
-	  if (!location) {
-		console.log('선택된 지역의 위치 정보를 찾을 수 없습니다.');
-		weatherData = null;
-		isObservable = null;
-		isLoading = false;
-		return;
-	  }
-	 
-	  try {
-		weatherData = await getWeather(location.latitude, location.longitude);
-	  } catch (error) {
-		console.error('Error fetching weather data:', error);
-		weatherData = null;
-		isObservable = null;
-	  } finally {
-		isLoading = false;
-	  }
-	}
-
-	async function handleLocationPermission() {
-		try {
-			if (!browser) return;
-			
-			const position = await new Promise((resolve, reject) => {
-				navigator.geolocation.getCurrentPosition(resolve, reject, {
-					enableHighAccuracy: true,
-					timeout: 5000,
-					maximumAge: 0
-				});
-			});
-
-			userLocation = {
-				latitude: position.coords.latitude,
-				longitude: position.coords.longitude
-			};
-
-			weatherData = await getWeatherData(userLocation.latitude, userLocation.longitude);
-			error = null;
-		} catch (e) {
-			console.error('위치 정보 조회 실패:', e);
-			if (e.message.includes('API 키')) {
-				error = '서버 설정 오류: 날씨 정보를 가져올 수 없습니다.';
-			} else if (e.message.includes('위치')) {
-				error = '위치 정보를 가져올 수 없습니다. 위치 접근을 허용해주세요.';
-			} else {
-				error = e.message || '날씨 정보를 가져오는데 실패했습니다.';
-			}
-		} finally {
-			isLoading = false;
+		if (!$province || !$city) {
+			// alert('광역시/도와 시/군/구를 선택해주세요.');
+			return;
 		}
+
+		const location = $locationStore.locations.find(
+			(loc) => loc.province === $province && loc.city === $city
+		);
+
+		await fetchWeatherForLocation(location);
 	}
    
 	function getWeatherInfo(day, time) {
@@ -241,31 +300,43 @@ function formatSnowfall(value) {
   }
 }
 
-let isDragging = false;
-let startX;
-let scrollLeft;
+let recommendedLocation = null;
+let recommendationError = '';
 
-function handleMouseDown(e) {
-  isDragging = true;
-  const timeline = e.currentTarget;
-  startX = e.pageX - timeline.offsetLeft;
-  scrollLeft = timeline.scrollLeft;
-  timeline.style.cursor = 'grabbing';
+async function recommendLocation() {
+  isLoading = true;
+  recommendationError = '';
+
+  try {
+    const response = await fetch('/api/recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: '오늘 별 관측 장소 추천해줘' })
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data.locations?.length) {
+      throw new Error(data.message || '추천 지역을 찾지 못했습니다.');
+    }
+
+    recommendedLocation = data.locations[0];
+    province.set(recommendedLocation.province);
+    city.set(recommendedLocation.city);
+
+    await fetchWeatherForLocation({
+      province: recommendedLocation.province,
+      city: recommendedLocation.city,
+      latitude: recommendedLocation.latitude,
+      longitude: recommendedLocation.longitude
+    });
+  } catch (error) {
+    console.error('Error fetching weather recommendation:', error);
+    recommendationError = error.message || '추천 지역을 불러오지 못했습니다.';
+  } finally {
+    isLoading = false;
+  }
 }
 
-function handleMouseMove(e) {
-  if (!isDragging) return;
-  e.preventDefault();
-  const timeline = e.currentTarget;
-  const x = e.pageX - timeline.offsetLeft;
-  const walk = (x - startX) * 2;
-  timeline.scrollLeft = scrollLeft - walk;
-}
-
-function handleMouseUp(e) {
-  isDragging = false;
-  e.currentTarget.style.cursor = 'grab';
-}
 
 function getWeatherIcon(sky, pty, time) {
   if (pty === '1') return '🌧️';
@@ -285,10 +356,75 @@ function getWeatherIcon(sky, pty, time) {
   }
 }
 
+function draggableScroll(node) {
+  let isDragging = false;
+  let hasDragged = false;
+  let startX = 0;
+  let startScrollLeft = 0;
+
+  function handlePointerDown(event) {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+    isDragging = true;
+    hasDragged = false;
+    startX = event.clientX;
+    startScrollLeft = node.scrollLeft;
+    node.classList.add('dragging');
+    node.setPointerCapture?.(event.pointerId);
+  }
+
+  function handlePointerMove(event) {
+    if (!isDragging) return;
+
+    const distance = event.clientX - startX;
+    if (Math.abs(distance) > 4) {
+      hasDragged = true;
+      suppressTimelineClick = true;
+      event.preventDefault();
+    }
+
+    node.scrollLeft = startScrollLeft - distance;
+  }
+
+  function finishDrag(event) {
+    if (!isDragging) return;
+
+    isDragging = false;
+    node.classList.remove('dragging');
+    node.releasePointerCapture?.(event.pointerId);
+
+    if (hasDragged) {
+      window.setTimeout(() => {
+        suppressTimelineClick = false;
+      }, 0);
+    }
+  }
+
+  node.addEventListener('pointerdown', handlePointerDown);
+  node.addEventListener('pointermove', handlePointerMove);
+  node.addEventListener('pointerup', finishDrag);
+  node.addEventListener('pointercancel', finishDrag);
+  node.addEventListener('pointerleave', finishDrag);
+
+  return {
+    destroy() {
+      node.removeEventListener('pointerdown', handlePointerDown);
+      node.removeEventListener('pointermove', handlePointerMove);
+      node.removeEventListener('pointerup', finishDrag);
+      node.removeEventListener('pointercancel', finishDrag);
+      node.removeEventListener('pointerleave', finishDrag);
+    }
+  };
+}
+
 </script>
    
    <main>
-	<h1 class="head">DeepSky - 전국 천문관측 가능 여부 조회</h1>
+	<section class="home-hero">
+		<p class="eyebrow">Astronomy Weather Guide</p>
+		<h1 class="head">전국 천문관측 가능 여부 조회</h1>
+		<p class="hero-copy">지역과 시간을 고르면 구름, 강수, 습도 흐름을 한눈에 확인할 수 있습니다.</p>
+	</section>
    
 	<div class="current-date-time">
 	  {format(currentDate, 'yyyy년 M월 d일 HH:mm')}
@@ -320,6 +456,16 @@ function getWeatherIcon(sky, pty, time) {
 		  날씨 조회
 		{/if}
 	  </button>
+    <button class="JHbutton" on:click={recommendLocation} disabled={isLoading}>
+      {#if isLoading}
+        <i class="fas fa-spinner fa-spin"></i> 추천 찾는 중...
+      {:else}
+        추천 지역
+      {/if}
+    </button>
+	  {#if recommendationError}
+		<p class="recommendation-error" role="alert">{recommendationError}</p>
+	  {/if}
 	</div>
    
 	{#if weatherData}
@@ -332,22 +478,28 @@ function getWeatherIcon(sky, pty, time) {
 		  <button class:selected={selectedDay === 'today'} on:click={() => selectedDay = 'today'}>오늘</button>
 		  <button class:selected={selectedDay === 'tomorrow'} on:click={() => selectedDay = 'tomorrow'}>내일</button>
 		  <button class:selected={selectedDay === 'dayAfterTomorrow'} on:click={() => selectedDay = 'dayAfterTomorrow'}>모레</button>
+		  <span class="scroll-hint">날씨가 보이지 않는다면 옆으로 넘겨주세요 !</span>
 		</div>
 
 		<div class="weather-timeline-container">
-		  <div class="weather-timeline" 
-			on:mousedown={handleMouseDown}
-			on:mousemove={handleMouseMove}
-			on:mouseup={handleMouseUp}
-			on:mouseleave={handleMouseUp}
-			style="overflow-x: auto; cursor: grab;">
+		  <div class="weather-timeline"
+			use:draggableScroll
+			role="region"
+			aria-label="시간대별 날씨 정보">
 			<div class="timeline-hours">
 			  {#each ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'] as time}
 				{@const targetDate = format(addDays(currentDate, selectedDay === 'today' ? 0 : selectedDay === 'tomorrow' ? 1 : 2), 'yyyyMMdd')}
 				{@const weatherInfo = weatherData ? weatherData.filter(data => data.fcstDate === targetDate && data.fcstTime === time + '00') : []}
 				{@const sky = weatherInfo.find(w => w.category === 'SKY')?.fcstValue}
 				{@const pty = weatherInfo.find(w => w.category === 'PTY')?.fcstValue}
-				<div class="timeline-column" class:selected={selectedTime === time + '00'} on:click={() => getWeatherInfo(selectedDay, time + '00')}>
+				<button
+					type="button"
+					class="timeline-column"
+					class:selected={selectedTime === time + '00'}
+					on:click={() => {
+						if (!suppressTimelineClick) getWeatherInfo(selectedDay, time + '00');
+					}}
+				>
 				  <div class="time-header">{time}시</div>
 				  <div class="weather-data-item">
 					<span class="data-label">기온</span>
@@ -378,7 +530,7 @@ function getWeatherIcon(sky, pty, time) {
 					<span class="data-label">습도</span>
 					<span class="data-value">{formatValue(weatherInfo.find(w => w.category === 'REH')?.fcstValue)}%</span>
 				  </div>
-				</div>
+				</button>
 			  {/each}
 			</div>
 		  </div>
@@ -439,21 +591,57 @@ function getWeatherIcon(sky, pty, time) {
    </main>
 
 <style>
+  :global(main) {
+    overflow-x: hidden;
+  }
+
+  .home-hero {
+    width: min(980px, 100%);
+    margin: 0 auto 24px;
+    text-align: center;
+  }
+
+  .eyebrow {
+    margin: 0 0 10px;
+    color: #93c5fd;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .hero-copy {
+    max-width: 620px;
+    margin: 14px auto 0;
+    color: #cbd5e1;
+    font-size: 1.04rem;
+    line-height: 1.65;
+  }
+
   .weather-timeline-container {
     margin-top: 20px;
     width: 100%;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface-soft);
   }
 
   .weather-timeline {
     overflow-x: auto;
+    overflow-y: hidden;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
-    padding: 15px;
+    padding: 16px;
     user-select: none;
     -webkit-user-select: none;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+    cursor: grab;
+  }
+
+  :global(.weather-timeline.dragging) {
+    cursor: grabbing;
   }
 
   .weather-timeline::-webkit-scrollbar {
@@ -467,47 +655,66 @@ function getWeatherIcon(sky, pty, time) {
 
   .timeline-hours {
     display: flex;
-    gap: 15px;
+    gap: 12px;
+    width: max-content;
   }
 
   .timeline-column {
-    min-width: 100px;
-    padding: 15px;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
+    width: 126px;
+    min-width: 126px;
+    height: auto;
+    min-height: 0;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
     cursor: pointer;
     transition: all 0.3s ease;
-    background: #fafafa;
-    touch-action: pan-y pinch-zoom;
+    background: #ffffff;
+    color: var(--text);
+    text-align: initial;
+    box-shadow: none;
+    touch-action: pan-x;
+    user-select: none;
+  }
+
+  :global(.weather-timeline.dragging) .timeline-column {
+    pointer-events: none;
   }
 
   .timeline-column:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.12);
   }
 
   .timeline-column.selected {
-    background-color: #e3f2fd;
-    border-color: #2196f3;
-    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+    background-color: var(--primary-soft);
+    border-color: var(--primary);
+    box-shadow: 0 12px 26px rgba(37, 99, 235, 0.18);
+  }
+
+  .timeline-column:hover,
+  .timeline-column:focus-visible {
+    background: #ffffff;
   }
 
   .time-header {
-    font-weight: bold;
+    font-weight: 800;
     text-align: center;
     margin-bottom: 12px;
     padding-bottom: 8px;
-    border-bottom: 2px solid #eee;
-    color: #1976d2;
-    font-size: 1.1em;
+    border-bottom: 1px solid var(--line);
+    color: var(--primary-strong);
+    font-size: 1.05rem;
   }
 
   .weather-data-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid #f0f0f0;
+    min-height: 54px;
+    padding: 7px 0;
+    border-bottom: 1px solid #eef2f7;
     text-align: center;
   }
 
@@ -516,88 +723,47 @@ function getWeatherIcon(sky, pty, time) {
   }
 
   .data-label {
-    color: #757575;
-    font-size: 0.85em;
+    color: var(--muted);
+    font-size: 0.78rem;
     margin-bottom: 4px;
+    font-weight: 600;
   }
 
   .data-value {
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 0.95em;
-  }
-
-  .date-buttons {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    justify-content: center;
-  }
-
-  .date-buttons button {
-    padding: 8px 20px;
-    border: none;
-    border-radius: 20px;
-    background: #f5f5f5;
-    color: #666;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .date-buttons button.selected {
-    background: #2196f3;
-    color: white;
-    box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
-  }
-
-  .selected-location {
-    text-align: center;
-    font-size: 1.2em;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 15px;
-  }
-
-  .date-info {
-    text-align: center;
-    color: #000000;
-    margin-bottom: 15px;
+    font-weight: 800;
+    color: var(--text);
+    font-size: 0.92rem;
   }
 
   .weather-icon {
-    font-size: 1.5em;
+    font-size: 1.45rem;
     margin-bottom: 5px;
   }
 
   .moon-info-container {
-    background: linear-gradient(to bottom, #1a237e, #283593);
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    color: white;
+    background:
+      linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(30, 64, 175, 0.82)),
+      #0f172a;
+    color: #ffffff;
   }
 
   .moon-info-title {
-    text-align: center;
     color: #fff;
-    margin-bottom: 20px;
-    font-size: 1.4em;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    margin-bottom: 18px;
   }
 
   .moon-info-items {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
   }
 
   .moon-info-item {
+    min-width: 0;
+    border: 1px solid rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border-radius: var(--radius);
     padding: 15px;
-    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -640,14 +806,15 @@ function getWeatherIcon(sky, pty, time) {
   }
 
   .moon-info-label {
-    font-size: 0.9em;
-    opacity: 0.8;
+    color: #cbd5e1;
+    font-size: 0.86rem;
+    font-weight: 700;
     margin-bottom: 5px;
   }
 
   .moon-info-value {
-    font-size: 1.3em;
-    font-weight: bold;
+    font-size: 1.25rem;
+    font-weight: 800;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 
@@ -669,12 +836,23 @@ function getWeatherIcon(sky, pty, time) {
 
   @media (max-width: 768px) {
     .moon-info-items {
-      flex-wrap: wrap;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     
     .moon-info-item {
-      width: calc(50% - 5px);
-      flex: none;
+      width: auto;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .timeline-column {
+      width: 118px;
+      min-width: 118px;
+      padding: 12px;
+    }
+
+    .moon-info-items {
+      grid-template-columns: 1fr;
     }
   }
 </style>
